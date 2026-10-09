@@ -7,64 +7,287 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="brand">
-    <span class="logo">⊢</span>
-    <div>
-      <h1>证明之路</h1>
-      <p class="sub">用命题逻辑与自然演绎，一步步推出中学数学定理</p>
+
+<!-- ================= 过渡遮罩：斜向擦除 ================= -->
+<div class="wipe is-reset" id="wipe" aria-hidden="true">
+  <span class="wipe__bar"></span>
+  <span class="wipe__bar"></span>
+  <span class="wipe__bar"></span>
+  <span class="wipe__bar"></span>
+</div>
+
+<!-- ================= ① 开始页 ================= -->
+<section class="screen screen--start is-active" id="screen-start">
+  <div class="start-bg" aria-hidden="true"></div>
+  <div class="start-main">
+    <div class="anim" style="--i:0">
+      <span class="eyebrow">Proof Terminal // Online</span>
+      <h1 class="start-title">证明之路</h1>
+      <p class="start-en" lang="en">Proof Road — Natural Deduction</p>
+      <p class="start-desc">在 Fitch 式证明台上点选前提、应用自然演绎规则，一步步推出中学数学课本里的结论。每一步都由形式化内核实时校验，推错会被明确拒绝。</p>
+    </div>
+
+    <div class="start-cta anim" style="--i:1">
+      <button class="btn-start" id="btn-start" type="button" aria-label="开始唤醒">
+        <span class="btn-start__face" aria-hidden="true"></span>
+        <span class="btn-start__ring" aria-hidden="true"></span>
+        <span class="btn-start__label">START</span>
+      </button>
+      <span class="start-hint">开始唤醒</span>
+      <button class="btn btn--outline" id="btn-start-archive" type="button">档案室 · 成就与数学史</button>
+    </div>
+
+    <div class="start-meta anim" style="--i:2">
+      <span><b id="meta-levels">32</b> 关 · L0 命题逻辑 16 / L1 代数证明 16</span>
+      <span><b id="meta-ach">0</b> / <span id="meta-ach-total">41</span> 成就</span>
+      <span><b id="meta-hist">0</b> / <span id="meta-hist-total">34</span> 数学史条目</span>
+      <span>存档 · 自动 + <b id="meta-saves">3</b> 个手动槽位</span>
+      <span><b id="meta-tests">155</b> 项自动化测试通过</span>
+      <span id="start-progress">已通关 0 / 32</span>
     </div>
   </div>
-  <div class="stats">
-    <span id="progress-text">0 / 0 关</span>
-    <button id="btn-reset" class="ghost" title="清空本地进度">重置进度</button>
+  <div class="start-foot">
+    <span>Proof Road</span>
+    <span id="start-foot-hint">点 START 进入证明选择 · 首次进入证明台会有分步引导，随时可跳过</span>
+    <span>Zero Dependency</span>
   </div>
-</header>
-<main>
-  <aside class="sidebar"><div id="level-list" class="level-list"></div></aside>
-  <section class="workspace">
-    <div class="level-head">
-      <h2 id="level-title">载入中…</h2>
-      <div class="tier" id="level-tier"></div>
+</section>
+
+<!-- ================= ② 关卡选择 ================= -->
+<section class="screen screen--select" id="screen-select" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">⊢</span>
+      <span class="brand-txt">
+        <span class="brand-name">证明之路</span>
+        <span class="brand-en">Proof Road / Natural Deduction</span>
+      </span>
     </div>
-    <div class="goal-box">
-      <div class="label">要证明的结论</div>
-      <div class="goal" id="goal-text">—</div>
-      <div class="openvars" id="goal-openvars"></div>
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item is-current" type="button" id="nav-select">关卡<span>Levels</span></button>
+      <button class="nav-item" type="button" id="nav-archive">档案室<span>Archive</span></button>
+      <button class="nav-item" type="button" id="nav-save">存档<span>Saves</span></button>
+      <button class="nav-item" type="button" id="nav-start">开始页<span>Title</span></button>
+    </nav>
+    <div class="topbar-right">
+      <span class="counter">
+        <span class="counter__value" id="select-progress-num">0</span>
+        <span class="counter__den" id="select-progress-den">/ 32</span>
+        <span class="counter__lbl">已通关</span>
+      </span>
+      <button class="btn btn--outline" id="btn-reset" type="button" title="清空本地进度、统计、成就与史话阅读记录">重置进度</button>
     </div>
-    <p class="teach" id="level-teach"></p>
-    <p class="premise-note" id="level-premises"></p>
-    <div class="panels">
-      <div class="panel">
-        <div class="panel-head"><span>可用事实（点选作为前提）</span><span class="hint" id="select-hint">已选 0 条</span></div>
-        <div class="facts" id="facts"></div>
-        <div class="panel-foot">
-          <button id="btn-instantiate" class="ghost">展开全称公理（自动实例化）</button>
-          <button id="btn-undo" class="ghost">撤销一步</button>
+  </header>
+
+  <div class="shell shell--select">
+    <main class="stack">
+      <div class="sec-head anim" style="--i:0">
+        <h2>证明选择</h2>
+        <span class="eyebrow">Proof Select</span>
+      </div>
+      <div class="tier-tabs anim" style="--i:1" id="tier-tabs" role="tablist" aria-label="层级"></div>
+      <div class="op-grid" id="op-grid"></div>
+    </main>
+
+    <aside class="detail anim" style="--i:2" id="detail" aria-live="polite"></aside>
+  </div>
+</section>
+
+<!-- ================= ③ 证明台 ================= -->
+<section class="screen screen--desk" id="screen-desk" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">⊢</span>
+      <span class="brand-txt">
+        <span class="brand-name">证明之路</span>
+        <span class="brand-en">Proof Road / Natural Deduction</span>
+      </span>
+    </div>
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item" type="button" id="nav-back">证明选择<span>Levels</span></button>
+      <button class="nav-item is-current" type="button">证明台<span>Proof Desk</span></button>
+      <button class="nav-item" type="button" id="nav-save-desk">存档<span>Saves</span></button>
+      <button class="nav-item" type="button" id="nav-archive-desk">档案室<span>Archive</span></button>
+    </nav>
+    <div class="topbar-right">
+      <span class="counter">
+        <span class="counter__value" id="progress-text">0 / 0</span>
+      </span>
+      <button class="btn btn--outline" id="btn-reset-desk" type="button">重置进度</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="rail">
+      <div class="sec-head sec-head--sm">
+        <h3>关卡索引</h3>
+        <span class="eyebrow">Index</span>
+      </div>
+      <div id="level-list" class="level-list"></div>
+    </aside>
+
+    <main class="stack">
+      <div class="anim" style="--i:0">
+        <div class="level-head">
+          <span class="level-code" id="level-code">—</span>
+          <h1 class="level-title" id="level-title">载入中…</h1>
+          <span class="level-sub" id="level-tier"></span>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-head"><span>推理规则</span><span class="hint" id="rule-hint">先选前提，再点规则</span></div>
+
+      <div class="goal anim" style="--i:1">
+        <span class="goal-l">
+          <span class="goal-lbl">// 要证明的结论</span>
+          <span class="goal-fx" id="goal-text">—</span>
+          <span class="goal-open" id="goal-openvars"></span>
+        </span>
+        <span class="goal-r">
+          <span class="tag tag--action">GOAL</span>
+        </span>
+      </div>
+
+      <p class="teach anim" style="--i:2" id="level-teach"></p>
+      <p class="premise anim" style="--i:3" id="level-premises"></p>
+
+      <div class="panel anim" style="--i:4">
+        <div class="signal-top"></div>
+        <div class="panel-head">
+          <h3>可用事实</h3>
+          <span class="eyebrow">Facts</span>
+          <span class="panel-right" id="select-hint">已选 0 条</span>
+        </div>
+        <div class="facts" id="facts"></div>
+        <div class="panel-foot">
+          <button class="btn btn--outline" id="btn-instantiate" type="button">展开全称公理</button>
+          <button class="btn btn--outline" id="btn-undo" type="button">撤销一步</button>
+          <button class="btn btn--outline" id="btn-restart" type="button" title="清空这一关推到一半的现场，从第一步重来">重开本关</button>
+        </div>
+      </div>
+
+      <div class="panel anim" style="--i:5">
+        <div class="panel-head">
+          <h3>推理规则</h3>
+          <span class="eyebrow">Rules</span>
+          <span class="panel-right" id="rule-hint">先选前提，再点规则</span>
+        </div>
         <div class="rules" id="rules"></div>
         <div class="choices" id="choices" hidden></div>
       </div>
+
+      <div class="panel anim" style="--i:6">
+        <div class="panel-head">
+          <h3>证明记录</h3>
+          <span class="eyebrow">Proof</span>
+          <span class="panel-right" id="proof-hint"></span>
+        </div>
+        <ol class="proof" id="proof"></ol>
+      </div>
+
+      <div class="assume-bar anim" style="--i:7" id="assume-bar">
+        <div class="assume-field">
+          <label class="field" for="assume-input">
+            <span class="field__label">子证明 / 假设式</span>
+            <input class="input" id="assume-input" placeholder="例如 B 或 not A">
+          </label>
+        </div>
+        <button class="btn btn--outline" id="btn-assume" type="button">打开假设</button>
+        <span class="scopes" id="scope-list"></span>
+        <button class="btn btn--outline" id="btn-guide" type="button" title="重新看这一关的分步引导（不看也可以随时跳过）">本关引导</button>
+        <button class="btn btn--advanced" id="btn-hint" type="button">提示</button>
+      </div>
+
+      <div class="notice anim" id="status-box" style="--i:8">
+        <span class="notice__code" id="status-code">RI / INFO</span>
+        <div class="notice__body">
+          <p class="notice__message" id="status">选好前提后点击规则即可推进一步。</p>
+        </div>
+      </div>
+
+      <div class="panel panel--done anim" id="done-panel" hidden>
+        <div class="signal-top"></div>
+        <div class="done-body">
+          <span class="done-mark cube" aria-hidden="true"><span class="cube__box"><span class="cube__f cube__f--f"></span><span class="cube__f cube__f--b"></span><span class="cube__f cube__f--l"></span><span class="cube__f cube__f--r"></span><span class="cube__f cube__f--t"></span><span class="cube__f cube__f--d"></span></span><span class="cube__g">✓</span></span>
+          <div>
+            <h3 class="done-title">证明完成</h3>
+            <p class="done-msg" id="done-msg"></p>
+          </div>
+          <div class="done-actions">
+            <button class="btn btn--outline" id="btn-done-select" type="button">返回证明选择</button>
+            <button class="btn btn--advanced" id="btn-next" type="button">下一关</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="desk-extra">
+        <button class="btn btn--outline" id="btn-axioms" type="button">查看本关公理表</button>
+        <button class="btn btn--outline" id="btn-history" type="button">数学史 · 这一关的来历</button>
+        <button class="btn btn--outline" id="btn-saves" type="button" title="自动存档、手动槽位、导出与导入">存档 / 读档</button>
+      </div>
+      <div class="axioms" id="axioms" hidden></div>
+      <div class="hist-card" id="history-card" hidden></div>
+    </main>
+  </div>
+</section>
+
+<!-- ================= ④ 档案室：成就 + 数学史长廊 ================= -->
+<section class="screen screen--archive" id="screen-archive" hidden>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">✦</span>
+      <span class="brand-txt">
+        <span class="brand-name">档案室</span>
+        <span class="brand-en">Archive / Achievements · History · Saves</span>
+      </span>
     </div>
-    <div class="proof-area">
-      <div class="panel-head"><span>证明记录</span><span class="hint" id="proof-hint"></span></div>
-      <ol class="proof" id="proof"></ol>
+    <nav class="nav" aria-label="主导航">
+      <button class="nav-item" type="button" id="nav-levels-archive">关卡<span>Levels</span></button>
+      <button class="nav-item is-current" type="button">档案室<span>Archive</span></button>
+      <button class="nav-item" type="button" id="nav-start-archive">开始页<span>Title</span></button>
+    </nav>
+    <div class="topbar-right">
+      <span class="counter">
+        <span class="counter__value" id="archive-ach-num">0</span>
+        <span class="counter__den" id="archive-ach-den">/ 41</span>
+        <span class="counter__lbl">成就</span>
+      </span>
     </div>
-    <div class="assume-bar">
-      <span>子证明：</span>
-      <input id="assume-input" placeholder="输入假设式，例如 A 或 not B">
-      <button id="btn-assume">打开假设</button>
-      <button id="btn-hint" class="primary">提示</button>
-      <span class="scopes" id="scope-list"></span>
+  </header>
+
+  <div class="shell shell--select">
+    <main class="stack">
+      <div class="sec-head anim" style="--i:0">
+        <h2>档案室</h2>
+        <span class="eyebrow">Archive</span>
+      </div>
+      <div class="tier-tabs anim" style="--i:1" id="archive-tabs" role="tablist" aria-label="档案分类"></div>
+      <div id="archive-body"></div>
+    </main>
+    <aside class="detail anim" style="--i:2" id="archive-side" aria-live="polite"></aside>
+  </div>
+</section>
+
+<!-- ================= 新手引导浮标（随时可跳过） ================= -->
+<div class="coach" id="coach" hidden>
+  <div class="coach__dim" id="coach-dim"></div>
+  <div class="coach__card" id="coach-card">
+    <span class="coach__step" id="coach-step">引导</span>
+    <h4 class="coach__title" id="coach-title"></h4>
+    <p class="coach__text" id="coach-text"></p>
+    <div class="coach__action" id="coach-action" hidden></div>
+    <div class="coach__hist" id="coach-hist" hidden></div>
+    <div class="coach__foot">
+      <button class="btn btn--outline" id="coach-skip" type="button">跳过引导</button>
+      <span class="coach__spacer"></span>
+      <button class="btn btn--outline" id="coach-prev" type="button">上一步</button>
+      <button class="btn btn--advanced" id="coach-next" type="button">下一步</button>
     </div>
-    <div class="status" id="status">选好前提后点击规则即可推进一步。</div>
-    <div class="axioms-toggle"><button id="btn-axioms" class="ghost">查看本关公理表</button></div>
-    <div class="axioms" id="axioms" hidden></div>
-  </section>
-</main>
+    <div class="coach__dots" id="coach-dots"></div>
+  </div>
+</div>
+
+<!-- ================= 成就解锁提示 ================= -->
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
 <script type="module" src="src/ui/app.js"></script>
 </body>
 </html>

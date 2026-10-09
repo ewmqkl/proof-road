@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>证明之路 · 界面样片 v2（ak-ui / system）</title>
+<!--
+  界面样片 v2 · 依据 ak-ui 设计契约与 CSS Core 重做。
+  · vendor/ak-ui.min.css 来自 npm 包 @yunyoujun/ak-ui@1.1.0（MIT），原样 vendor，未改动。
+  · ak-ui 是受《明日方舟》界面启发的独立设计语言，明确不还原任何具体游戏画面、素材或构图。
+    本页同样不含任何游戏 Logo / 立绘 / 纹理 / 图标 / 截图。
+  · 只有顶部「视图切换 / 显示标注」可用，其余控件是静态样子。
+-->
+<link rel="stylesheet" href="vendor/ak-ui.min.css">
+<style>
+/* ============================================================
+   项目自有组件层：一律通过 --ak-* 语义 token 取值，不硬编码重复决策
+   ============================================================ */
+:root{
+  /* 品牌映射：把 ak-ui 的语义角色对到"证明之路"上，不改语义含义 */
+  --pg-radius:var(--ak-radius-subtle);
+  --pg-hair:rgba(248,248,245,.14);
+  --pg-hair-strong:hsla(0,0%,100%,.3);   /* 官网实测的强分隔线 */
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; }
+body{
+  background:var(--ak-surface-canvas);
+  color:var(--ak-text-primary);
+  font:15px/1.6 var(--ak-font-sans);
+  padding-bottom:var(--ak-space-6);
+}
+
+/* ---------- 样片控制条（不属于设计语言） ---------- */
+.ctl{
+  position:sticky; top:0; z-index:60;
+  display:flex; gap:var(--ak-space-4); flex-wrap:wrap; align-items:center;
+  padding:var(--ak-space-3) var(--ak-space-5);
+  background:var(--ak-surface-panel); color:var(--ak-text-inverse);
+  border-bottom:var(--ak-line-strong) solid var(--ak-signal-action);
+}
+.ctl b{ font-family:var(--ak-font-command); font-size:14px; font-weight:900; }
+.ctl .seg{ display:flex; }
+.ctl .seg button{
+  font:12px/1 var(--ak-font-sans); letter-spacing:.06em; padding:8px 13px; min-height:34px; cursor:pointer;
+  background:rgba(0,0,0,.06); color:var(--ak-text-inverse);
+  border:1px solid rgba(0,0,0,.18); border-right:none;
+}
+.ctl .seg button:last-child{ border-right:1px solid rgba(0,0,0,.18); }
+.ctl .seg button[aria-pressed="true"]{ background:var(--ak-surface-inverse); color:#fff; border-color:var(--ak-surface-inverse); }
+.ctl .seg button:hover{ background:rgba(0,0,0,.14); }
+.ctl .seg button[aria-pressed="true"]:hover{ background:#000; }
+.ctl .hint{ margin-left:auto; font:11px/1.5 var(--ak-font-mono); letter-spacing:.04em; opacity:.6; }
+
+/* ---------- 顶栏 ---------- */
+.topbar{
+  display:flex; align-items:center; gap:var(--ak-space-5); flex-wrap:wrap;
+  padding:var(--ak-space-4) var(--ak-space-5);
+  background:var(--ak-surface-inverse);
+  border-bottom:var(--ak-line-hairline) solid var(--pg-hair-strong);
+}
+.brand{ display:flex; align-items:center; gap:var(--ak-space-3); }
+.brand-mark{
+  display:grid; place-items:center; width:44px; height:44px;
+  background:var(--ak-signal-action); color:var(--ak-text-inverse);
+  font:900 26px/1 var(--ak-font-serif);
+  clip-path:polygon(0 0, 100% 0, 100% 72%, 72% 100%, 0 100%);
+}
+.brand-txt{ display:flex; flex-direction:column; gap:3px; }
+.brand-name{ font-family:var(--ak-font-command); font-size:1.25rem; font-weight:900; letter-spacing:var(--ak-type-tight); }
+.brand-en{ font-family:var(--ak-font-mono); font-size:.625rem; letter-spacing:var(--ak-type-wide); text-transform:uppercase; color:var(--ak-text-secondary); }
+.topbar .ak-nav{ margin-left:var(--ak-space-4); }
+.topbar-right{ display:flex; align-items:center; gap:var(--ak-space-4); margin-left:auto; }
+
+/* ---------- 外壳 ---------- */
+.shell{
+  display:grid; grid-template-columns:288px minmax(0,1fr); gap:var(--ak-space-5);
+  max-width:1560px; margin:0 auto; padding:var(--ak-space-5); align-items:start;
+}
+.shell-select{ grid-template-columns:minmax(0,1fr) 360px; }
+.stack{ display:flex; flex-direction:column; gap:var(--ak-space-4); min-width:0; }
+
+/* ---------- 小节标题：青色 4px 竖线 + 大字号命令体（ak-ui 文档页的做法） ---------- */
+.sec-head{ display:flex; align-items:flex-end; gap:var(--ak-space-3); flex-wrap:wrap;
+  border-left:var(--ak-line-strong) solid var(--ak-signal-info); padding-left:var(--ak-space-3); }
+.sec-head h2{ font-family:var(--ak-font-command); font-size:1.75rem; font-weight:900; letter-spacing:var(--ak-type-tight); margin:0; }
+.eyebrow{ font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:var(--ak-signal-info); }
+.eyebrow--right{ margin-left:auto; color:var(--ak-text-secondary); }
+
+/* ---------- 关卡头 ---------- */
+.level-head{ display:flex; align-items:flex-end; gap:var(--ak-space-3); flex-wrap:wrap; }
+.level-code{ font-family:var(--ak-font-mono); font-size:.8125rem; font-weight:700; letter-spacing:.08em;
+  color:var(--ak-text-inverse); background:var(--ak-signal-action); padding:4px 9px; }
+.level-title{ font-family:var(--ak-font-command); font-size:var(--ak-type-title-size); font-weight:900;
+  letter-spacing:var(--ak-type-tight); line-height:1.1; margin:0; }
+.level-sub{ font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:var(--ak-text-secondary); }
+
+/* ---------- 面板：抬升表面 + 内嵌 1px 描边框（ak-ui command 的做法） ---------- */
+.panel{
+  position:relative;
+  background:var(--ak-surface-raised);
+  background-image:linear-gradient(165deg, rgba(255,255,255,.07), transparent 60%);
+  box-shadow:var(--ak-shadow-panel);
+  --panel-signal:var(--ak-signal-info);
+}
+.panel::before{ content:""; position:absolute; inset:6px; border:var(--ak-line-hairline) solid rgba(255,255,255,.18); pointer-events:none; }
+.panel-head{
+  position:relative; display:flex; align-items:baseline; gap:var(--ak-space-3); flex-wrap:wrap;
+  padding:var(--ak-space-4) var(--ak-space-5) var(--ak-space-3);
+  border-bottom:var(--ak-line-hairline) solid var(--pg-hair-strong);
+}
+.panel-head h3{ margin:0; font-family:var(--ak-font-command); font-size:1.125rem; font-weight:900; letter-spacing:var(--ak-type-tight); }
+.panel-right{ margin-left:auto; font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:.04em; color:var(--ak-text-secondary); }
+.panel-body{ position:relative; }
+.panel-foot{ position:relative; display:flex; gap:var(--ak-space-2); flex-wrap:wrap;
+  padding:var(--ak-space-3) var(--ak-space-5) var(--ak-space-4); border-top:var(--ak-line-hairline) solid var(--pg-hair); }
+
+/* 信号条：面板顶部的 4px 强调线，只给"当前对象" */
+.signal-top{ height:var(--ak-line-strong); background:var(--panel-signal,var(--ak-signal-info)); }
+
+/* ---------- 目标：纸面亮色表面，全页唯一的"纸" ---------- */
+.goal{
+  position:relative; display:flex; align-items:center; gap:var(--ak-space-5); flex-wrap:wrap;
+  padding:var(--ak-space-5) var(--ak-space-6);
+  background:var(--ak-surface-panel); color:var(--ak-text-inverse);
+  box-shadow:var(--ak-shadow-panel);
+}
+.goal::before{
+  content:""; position:absolute; top:0; right:0; width:96px; height:26px; pointer-events:none;
+  background:repeating-linear-gradient(-45deg, var(--ak-signal-accent) 0 2px, transparent 2px 7px);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 22% 100%);
+}
+.goal-lbl{ display:block; font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:rgba(27,29,31,.55); }
+.goal-fx{ display:block; margin-top:var(--ak-space-2); font:400 3.5rem/1.1 var(--ak-font-serif); }
+.goal-side{ margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:var(--ak-space-2); text-align:right; }
+.goal-note{ font-family:var(--ak-font-mono); font-size:.6875rem; color:rgba(27,29,31,.55); }
+
+.teach{ margin:0; max-width:74ch; color:var(--ak-text-primary); }
+.premise{ margin:0; font-family:var(--ak-font-mono); font-size:.8125rem; letter-spacing:.02em; color:var(--ak-text-secondary); }
+
+/* ---------- 事实行 ---------- */
+.facts{ display:flex; flex-direction:column; }
+.fact{
+  position:relative; display:grid; grid-template-columns:56px minmax(0,1fr); gap:var(--ak-space-3);
+  width:100%; padding:var(--ak-space-3) var(--ak-space-5); text-align:left; cursor:pointer;
+  background:transparent; border:0; border-left:var(--ak-line-strong) solid transparent;
+  color:var(--ak-text-primary);
+  transition:background var(--ak-motion-fast) var(--ak-ease-standard);
+}
+.fact + .fact{ border-top:var(--ak-line-hairline) solid var(--pg-hair); }
+.fact:hover{ background:rgba(255,255,255,.06); }
+.fact:focus-visible{ outline:var(--ak-focus-width) solid var(--ak-focus-color); outline-offset:calc(var(--ak-focus-offset) * -1); }
+.fact-id{ font-family:var(--ak-font-mono); font-size:.8125rem; line-height:1.8; color:var(--ak-text-secondary); }
+.fact-fx{ display:block; font:400 1.25rem/1.4 var(--ak-font-serif); overflow-wrap:anywhere; }
+.fact-meta{ display:block; margin-top:2px; font-family:var(--ak-font-sans); font-size:.75rem; color:var(--ak-text-secondary); }
+.fact--assume{ border-left-color:var(--ak-signal-action); background:rgba(241,198,68,.07); }
+.fact--assume .fact-id{ color:var(--ak-signal-action); }
+.fact--derived{ border-left-color:var(--ak-signal-info); }
+.fact--derived .fact-id{ color:var(--ak-signal-info); }
+.fact[aria-pressed="true"]{ background:rgba(74,171,234,.18); box-shadow:inset 0 0 0 1px rgba(74,171,234,.7); }
+.fact[aria-pressed="true"] .fact-id{ color:#fff; }
+
+/* ---------- 规则卡：ak-ui 的 command 卡语言 ---------- */
+.rules{ display:grid; grid-template-columns:repeat(auto-fill,minmax(184px,1fr)); gap:var(--ak-space-3); padding:var(--ak-space-4) var(--ak-space-5); }
+.rule{
+  position:relative; display:grid; align-content:end; gap:4px; min-height:96px; overflow:hidden;
+  padding:var(--ak-space-4);
+  background:var(--ak-surface-raised);
+  background-image:linear-gradient(165deg, rgba(255,255,255,.07), transparent 60%);
+  color:var(--ak-text-primary); border:0; cursor:pointer; text-align:left;
+  transition:filter var(--ak-motion-base) ease, transform var(--ak-motion-base) cubic-bezier(.22,1,.36,1);
+}
+.rule::before{ content:""; position:absolute; inset:5px; border:var(--ak-line-hairline) solid rgba(255,255,255,.18); pointer-events:none; }
+.rule::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:5px;
+  background:var(--ak-signal-info); transform:scaleX(0); transform-origin:left;
+  transition:transform 150ms ease; }
+.rule:hover{ filter:brightness(1.1); transform:translateY(-3px); }
+.rule:active{ filter:brightness(.95); transform:translateY(1px); }
+.rule:focus-visible{ outline:var(--ak-focus-width) solid var(--ak-focus-color); outline-offset:3px; }
+.rule[aria-pressed="true"]::after{ transform:scaleX(1); }
+.rule-nm{ position:relative; font-family:var(--ak-font-command); font-size:1.125rem; font-weight:900; letter-spacing:var(--ak-type-tight); line-height:1.15; }
+.rule-en{ position:relative; font-family:var(--ak-font-mono); font-size:.625rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:rgba(248,248,245,.6); }
+.rule-hint{ margin:0; padding:var(--ak-space-3) var(--ak-space-5) var(--ak-space-4);
+  border-top:var(--ak-line-hairline) solid var(--pg-hair); font-size:.8125rem; color:var(--ak-text-secondary); }
+.rule-hint b{ color:var(--ak-signal-action); }
+
+/* ---------- 引导卡 ---------- */
+.guide{ position:relative; background:var(--ak-surface-raised);
+  background-image:linear-gradient(165deg, rgba(241,198,68,.12), transparent 60%);
+  box-shadow:var(--ak-shadow-panel); }
+.guide::before{ content:""; position:absolute; inset:6px; border:var(--ak-line-hairline) solid rgba(241,198,68,.35); pointer-events:none; }
+.branch{ position:relative; display:flex; align-items:center; gap:var(--ak-space-3); flex-wrap:wrap;
+  padding:var(--ak-space-4) var(--ak-space-5); border-top:var(--ak-line-hairline) solid var(--pg-hair); }
+.branch:first-of-type{ border-top:0; }
+.branch-mark{ display:grid; place-items:center; width:26px; height:26px; flex:0 0 auto;
+  clip-path:polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:rgba(255,255,255,.14); color:var(--ak-text-secondary); font:700 12px/1 var(--ak-font-mono); }
+.branch--done .branch-mark{ background:var(--ak-signal-success); color:var(--ak-text-inverse); }
+.branch-text{ font-size:.9375rem; }
+.branch--done .branch-text{ color:var(--ak-text-secondary); text-decoration:line-through; text-decoration-color:rgba(248,248,245,.35); }
+.branch-res{ font-family:var(--ak-font-mono); font-size:.6875rem; color:var(--ak-text-secondary); }
+.branch--done .branch-res{ color:var(--ak-signal-success); }
+.branch .ak-button{ margin-left:auto; }
+
+/* ---------- 证明记录：固定三槽位 ---------- */
+.proof{ padding:0; }
+.prow-head,.prow{ display:grid; grid-template-columns:64px minmax(0,1fr) 230px; gap:var(--ak-space-3); align-items:baseline; }
+.prow-head{ position:relative; padding:var(--ak-space-2) var(--ak-space-5); background:rgba(0,0,0,.28); }
+.prow-head span{ font-family:var(--ak-font-mono); font-size:.625rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:var(--ak-text-secondary); }
+.prow{ position:relative; padding:var(--ak-space-3) var(--ak-space-5); border-top:var(--ak-line-hairline) solid var(--pg-hair); }
+.prow:first-of-type{ border-top:0; }
+.prow-no{ font-family:var(--ak-font-mono); font-size:.8125rem; line-height:1.8; color:var(--ak-text-secondary); }
+.prow-f{ font:400 1.25rem/1.4 var(--ak-font-serif); overflow-wrap:anywhere; }
+.prow-src{ font-family:var(--ak-font-mono); font-size:.6875rem; line-height:1.7; text-align:right; color:var(--ak-text-secondary); }
+.prow--assume{ border-left:var(--ak-line-strong) solid var(--ak-signal-action); background:rgba(241,198,68,.07); }
+.prow--assume .prow-src{ color:var(--ak-signal-action); }
+.prow--derived{ border-left:var(--ak-line-strong) solid var(--ak-signal-info); }
+.prow--d1{ padding-left:calc(var(--ak-space-5) + 26px); }
+
+/* ---------- 子证明条 ---------- */
+.assume-bar{ display:flex; align-items:center; gap:var(--ak-space-3); flex-wrap:wrap; }
+/* ak-ui 的 field/label/input 是亮色表面组件（label #2b3034、input 底 #f3f4ef），
+   所以给它们一块纸面，而不是把颜色压到深底上。 */
+.assume-field{ flex:1 1 320px; max-width:460px; padding:var(--ak-space-3) var(--ak-space-4);
+  background:var(--ak-surface-panel); box-shadow:var(--ak-shadow-panel); }
+.assume-field .ak-field{ margin:0; }
+.scopes{ display:flex; align-items:center; gap:var(--ak-space-3); flex-wrap:wrap; }
+.scope-chip{ display:flex; align-items:center; gap:var(--ak-space-2);
+  font-family:var(--ak-font-mono); font-size:.8125rem; color:var(--ak-text-primary); }
+.scope-hex{ display:grid; place-items:center; width:28px; height:28px; flex:0 0 auto;
+  clip-path:polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:var(--ak-signal-action); color:var(--ak-text-inverse); font:700 12px/1 var(--ak-font-mono); }
+.scope-none{ font-size:.8125rem; color:var(--ak-text-secondary); }
+.assume-bar .ak-button--advanced{ margin-left:auto; }
+
+/* ---------- 侧栏关卡索引 ---------- */
+.rail{ position:sticky; top:96px; display:flex; flex-direction:column; gap:var(--ak-space-3); }
+.rail-group{ border-left:var(--ak-line-strong) solid var(--ak-signal-info); padding-left:var(--ak-space-3); }
+.rail-group h3{ margin:0; font-family:var(--ak-font-command); font-size:1rem; font-weight:900; }
+.lv-list{ list-style:none; margin:var(--ak-space-3) 0 0; padding:0; display:flex; flex-direction:column; }
+.lv{
+  display:grid; grid-template-columns:34px minmax(0,1fr) auto; gap:var(--ak-space-3); align-items:center;
+  width:100%; min-height:44px; padding:var(--ak-space-2) var(--ak-space-3); text-align:left; cursor:pointer;
+  background:transparent; border:0; border-left:var(--ak-line-strong) solid transparent;
+  color:var(--ak-text-secondary); font-size:.875rem;
+  transition:background var(--ak-motion-fast) var(--ak-ease-standard);
+}
+.lv:hover{ background:rgba(255,255,255,.06); color:#fff; }
+.lv:focus-visible{ outline:var(--ak-focus-width) solid var(--ak-focus-color); outline-offset:-2px; }
+.lv-no{ font-family:var(--ak-font-mono); font-size:.75rem; color:var(--ak-text-secondary); }
+.lv-st{ font-family:var(--ak-font-mono); font-size:.625rem; letter-spacing:.1em; }
+.lv--done .lv-st{ color:var(--ak-signal-success); }
+.lv--now{ background:rgba(74,171,234,.16); border-left-color:var(--ak-signal-info); color:#fff; }
+.lv--now .lv-no,.lv--now .lv-st{ color:var(--ak-signal-info); }
+.rail-foot{ margin-top:auto; padding-top:var(--ak-space-3); border-top:var(--ak-line-hairline) solid var(--pg-hair);
+  font-family:var(--ak-font-mono); font-size:.6875rem; line-height:1.8; color:var(--ak-text-secondary); }
+
+/* ---------- 证明选择：操作卡网格 ---------- */
+.op-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(196px,1fr)); gap:var(--ak-space-3); }
+.op{
+  position:relative; display:grid; align-content:end; gap:6px; min-height:150px; overflow:hidden;
+  padding:var(--ak-space-4); text-align:left; cursor:pointer; border:0;
+  background:var(--ak-surface-raised);
+  background-image:linear-gradient(165deg, rgba(255,255,255,.07), transparent 60%);
+  color:var(--ak-text-primary);
+  transition:filter var(--ak-motion-base) ease, transform var(--ak-motion-base) cubic-bezier(.22,1,.36,1);
+}
+.op::before{ content:""; position:absolute; inset:6px; border:var(--ak-line-hairline) solid rgba(255,255,255,.18); pointer-events:none; }
+.op::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:5px; background:var(--op-signal,var(--ak-signal-info)); }
+.op:hover{ filter:brightness(1.1); transform:translateY(-4px); }
+.op:focus-visible{ outline:var(--ak-focus-width) solid var(--ak-focus-color); outline-offset:3px; }
+.op-no{ font-family:var(--ak-font-serif); font-size:2.75rem; font-weight:900; line-height:1; letter-spacing:var(--ak-type-tight); }
+.op-name{ position:relative; font-size:.875rem; line-height:1.4; color:var(--ak-text-secondary); overflow-wrap:anywhere; }
+.op-code{ position:relative; font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:.06em; color:var(--ak-text-secondary); }
+.op-state{ position:absolute; z-index:2; top:12px; right:14px; font-family:var(--ak-font-mono);
+  font-size:.625rem; font-weight:700; letter-spacing:.12em; color:var(--ak-text-secondary); }
+.op--done{ --op-signal:var(--ak-signal-success); }
+.op--done .op-state{ color:var(--ak-signal-success); }
+.op--now{ --op-signal:var(--ak-signal-action); background:var(--ak-surface-panel); color:var(--ak-text-inverse); }
+.op--now .op-name,.op--now .op-code,.op--now .op-state{ color:rgba(27,29,31,.62); }
+.op--now .op-state{ color:var(--ak-signal-accent); }
+.op--now::before{ border-color:rgba(0,0,0,.22); }
+
+/* ---------- 详情（纸面） ---------- */
+.detail{ position:sticky; top:96px; display:flex; flex-direction:column; gap:var(--ak-space-4);
+  padding:var(--ak-space-5); background:var(--ak-surface-panel); color:var(--ak-text-inverse);
+  box-shadow:var(--ak-shadow-panel); }
+.detail-eyebrow{ font-family:var(--ak-font-mono); font-size:.6875rem; letter-spacing:var(--ak-type-wide);
+  text-transform:uppercase; color:rgba(27,29,31,.5); }
+.detail-code{ font-family:var(--ak-font-mono); font-size:.8125rem; font-weight:700; letter-spacing:.08em;
+  color:var(--ak-text-inverse); background:var(--ak-signal-action); padding:3px 8px; align-self:flex-start; }
+.detail-title{ font-family:var(--ak-font-command); font-size:1.75rem; font-weight:900; letter-spacing:var(--ak-type-tight); margin:0; line-height:1.2; }
+.detail-goal{ padding:var(--ak-space-3) var(--ak-space-4); background:var(--ak-surface-inverse); color:var(--ak-text-primary); }
+.detail-goal .lbl{ font-family:var(--ak-font-mono); font-size:.625rem; letter-spacing:var(--ak-type-wide); text-transform:uppercase; color:var(--ak-text-secondary); }
+.detail-goal .fx{ display:block; margin-top:6px; font:400 1.75rem/1.2 var(--ak-font-serif); }
+.detail-rows{ margin:0; display:flex; flex-direction:column; }
+.detail-rows > div{ display:grid; grid-template-columns:88px minmax(0,1fr); gap:var(--ak-space-4);
+  padding:var(--ak-space-3) 0; border-top:var(--ak-line-hairline) solid rgba(0,0,0,.16); }
+.detail-rows dt{ font-family:var(--ak-font-mono); font-size:.6875rem; line-height:1.7; color:rgba(27,29,31,.55); }
+.detail-rows dd{ margin:0; font-size:.875rem; line-height:1.7; color:var(--ak-text-inverse); overflow-wrap:anywhere; }
+
+/* ---------- 标注 ---------- */
+.pin{ display:none; }
+body.notes-on [data-note]{ position:relative; }
+body.notes-on [data-note]::after{
+  content:attr(data-note); position:absolute; top:-11px; left:-11px; z-index:50;
+  width:26px; height:26px; display:grid; place-items:center;
+  clip-path:polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  background:var(--ak-signal-action); color:var(--ak-text-inverse); font:700 12px/1 var(--ak-font-mono);
+}
+body.notes-on [data-note="1"]::after{ top:10px; left:10px; }
+body.notes-on [data-note="2"]::after{ top:-24px; left:0; }
+.notes{ display:none; }
+body.notes-on .notes{ display:block; }
+
+/* ---------- 说明区（文档） ---------- */
+.doc{ max-width:1560px; margin:0 auto; padding:0 var(--ak-space-5) var(--ak-space-6); }
+.doc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:var(--ak-space-4); align-items:start; }
+.card-doc{ position:relative; padding:var(--ak-space-5); background:var(--ak-surface-raised);
+  background-image:linear-gradient(165deg, rgba(255,255,255,.07), transparent 60%); }
+.card-doc::before{ content:""; position:absolute; inset:6px; border:var(--ak-line-hairline) solid rgba(255,255,255,.18); pointer-events:none; }
+.card-doc h3{ position:relative; margin:0 0 var(--ak-space-4); font-family:var(--ak-font-command);
+  font-size:1.125rem; font-weight:900; letter-spacing:var(--ak-type-tight); }
+.card-doc p,.card-doc li{ position:relative; font-size:.8125rem; line-height:1.8; color:var(--ak-text-secondary); }
+.card-doc ul{ position:relative; margin:0; padding-left:1.1em; display:grid; gap:var(--ak-space-2); }
+.card-doc b{ color:var(--ak-text-primary); }
+.card-doc a{ color:var(--ak-signal-info); text-decoration:none; border-bottom:1px solid rgba(74,171,234,.4); }
+.card-doc a:hover{ color:#fff; border-bottom-color:#fff; }
+.card-doc code{ font-family:var(--ak-font-mono); font-size:.75rem; color:var(--ak-signal-action); }
+.tok{ position:relative; width:100%; border-collapse:collapse; }
+.tok td{ padding:5px 0; border-top:var(--ak-line-hairline) solid var(--pg-hair); font-family:var(--ak-font-mono); font-size:.75rem; vertical-align:top; }
+.tok tr:first-child td{ border-top:0; }
+.tok td:first-child{ color:var(--ak-text-secondary); width:48%; }
+.tok td:last-child{ color:var(--ak-text-primary); }
+.sw{ display:inline-block; width:11px; height:11px; margin-right:6px; vertical-align:-1px; border:1px solid rgba(255,255,255,.3); }
+
+/* ---------- 响应式：为窄屏重组，不缩小桌面控制室 ---------- */
+@media (max-width:1180px){
+  .shell,.shell-select{ grid-template-columns:1fr; }
+  .rail,.detail{ position:static; }
+}
+@media (max-width:760px){
+  .topbar .ak-nav{ margin-left:0; width:100%; }
+  .topbar-right{ margin-left:0; }
+  .prow-head,.prow{ grid-template-columns:52px minmax(0,1fr); }
+  .prow-src{ grid-column:2; text-align:left; }
+  .prow-head span:nth-child(3){ display:none; }
+  .level-title{ font-size:2rem; }
+  .goal-fx{ font-size:2.5rem; }
+  .assume-bar .ak-button--advanced{ margin-left:0; }
+  .ctl .hint{ margin-left:0; width:100%; }
+}
+@media (prefers-reduced-motion:reduce){ *{ transition-duration:1ms !important; animation-duration:1ms !important; } }
+</style>
+</head>
+<body>
+
+<div class="ctl">
+  <b>界面样片 v2</b>
+  <div class="seg" id="seg-view">
+    <button data-v="desk" aria-pressed="true">证明台</button>
+    <button data-v="levels">证明选择</button>
+  </div>
+  <div class="seg" id="seg-notes">
+    <button data-v="off" aria-pressed="true">隐藏标注</button>
+    <button data-v="on">显示标注</button>
+  </div>
+  <span class="hint">ak-ui 1.1.0 / system 强度 · 演示数据 · 除本控制条外均不可点击</span>
+</div>
+
+<!-- ===================== 视图 A · 证明台 ===================== -->
+<div id="view-desk">
+
+  <header class="topbar" data-note="1">
+    <div class="brand">
+      <span class="brand-mark">⊢</span>
+      <span class="brand-txt">
+        <span class="brand-name">证明之路</span>
+        <span class="brand-en">Proof Road / Natural Deduction</span>
+      </span>
+    </div>
+    <nav class="ak-nav" aria-label="主导航">
+      <a class="ak-nav__link" href="#view-desk" aria-current="page">
+        <span class="ak-nav__label">证明台</span>
+        <span class="ak-nav__description" lang="en">Proof Desk</span>
+      </a>
+      <a class="ak-nav__link" href="#view-levels">
+        <span class="ak-nav__label">关卡</span>
+        <span class="ak-nav__description" lang="en">Levels</span>
+      </a>
+      <a class="ak-nav__link" href="#doc">
+        <span class="ak-nav__label">公理表</span>
+        <span class="ak-nav__description" lang="en">Axioms</span>
+      </a>
+    </nav>
+    <div class="topbar-right">
+      <div class="ak-counter-group">
+        <div class="ak-counter">
+          <div class="ak-counter__prefix"><span class="ak-status__signal" style="background:var(--ak-signal-action)"></span></div>
+          <div class="ak-counter__content">12<span style="color:var(--ak-text-secondary);font-size:.875rem"> / 32</span></div>
+        </div>
+      </div>
+      <button class="ak-button ak-button--outline"><span class="ak-button__label">重置进度</span></button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="rail" data-note="2">
+      <div class="rail-group">
+        <h3>关卡索引</h3>
+        <div class="eyebrow">Level Index</div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:8px">L0 / 命题逻辑训练场</div>
+        <ul class="lv-list">
+          <li><button class="lv lv--done"><span class="lv-no">01</span><span>引用前提</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--done"><span class="lv-no">02</span><span>蕴含引入：证明 A → A</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--done"><span class="lv-no">03</span><span>蕴含消去：假言推理</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--done"><span class="lv-no">04</span><span>合取消去：从 A ∧ B 取一支</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--done"><span class="lv-no">05</span><span>合取引入：两边都要证</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--done"><span class="lv-no">06</span><span>析取引入：证一支就够</span><span class="lv-st">DONE</span></button></li>
+          <li><button class="lv lv--now" aria-current="true"><span class="lv-no">07</span><span>分情况讨论：析取消去</span><span class="lv-st">NOW</span></button></li>
+          <li><button class="lv"><span class="lv-no">08</span><span>否定引入：推出矛盾就否定假设</span><span class="lv-st">—</span></button></li>
+          <li><button class="lv"><span class="lv-no">09</span><span>反证法</span><span class="lv-st">—</span></button></li>
+        </ul>
+      </div>
+      <div class="rail-foot">L1 代数证明 · 16 关<br>共 32 关，已通关 12 关</div>
+    </aside>
+
+    <main class="stack">
+      <div class="eyebrow">Proof Desk <span class="eyebrow--right">Rhodes Island // Personnel File</span></div>
+
+      <div class="level-head" data-note="3">
+        <span class="level-code">L0-07</span>
+        <h1 class="level-title">分情况讨论：析取消去</h1>
+        <span class="level-sub">Rule ∨E</span>
+      </div>
+
+      <div class="goal" data-note="4">
+        <span>
+          <span class="goal-lbl">// 要证明的结论</span>
+          <span class="goal-fx">C</span>
+        </span>
+        <span class="goal-side">
+          <span class="ak-tag ak-tag--advanced">GOAL</span>
+          <span class="goal-note">本关无自由变量</span>
+        </span>
+      </div>
+
+      <p class="teach">“A 或 B”只知道两种可能；若由 A 能推出 C，由 B 也能推出 C，那么无论哪种情况 C 都成立。这就是“析取消去 ∨E”。</p>
+      <p class="premise">题设：A ∨ B，A → C，B → C。</p>
+
+      <div class="panel" data-note="5">
+        <div class="signal-top"></div>
+        <div class="panel-head">
+          <h3>可用事实</h3>
+          <span class="eyebrow">Facts</span>
+          <span class="panel-right">已选 1 条：p1</span>
+        </div>
+        <div class="panel-body facts">
+          <button class="fact" aria-pressed="true"><span class="fact-id">p1</span><span><span class="fact-fx">A ∨ B</span><span class="fact-meta">题设</span></span></button>
+          <button class="fact"><span class="fact-id">p2</span><span><span class="fact-fx">A → C</span><span class="fact-meta">题设</span></span></button>
+          <button class="fact"><span class="fact-id">p3</span><span><span class="fact-fx">B → C</span><span class="fact-meta">题设</span></span></button>
+          <button class="fact fact--assume"><span class="fact-id">H1</span><span><span class="fact-fx">A</span><span class="fact-meta">子证明假设（作用域 H1）</span></span></button>
+          <button class="fact fact--derived"><span class="fact-id">f1</span><span><span class="fact-fx">C</span><span class="fact-meta">蕴含消去 →E [A → C、A] · 依赖假设 H1</span></span></button>
+        </div>
+        <div class="panel-foot">
+          <button class="ak-button ak-button--outline"><span class="ak-button__label">展开全称公理</span></button>
+          <button class="ak-button ak-button--outline"><span class="ak-button__label">撤销一步</span></button>
+        </div>
+      </div>
+
+      <div class="panel" data-note="6">
+        <div class="panel-head">
+          <h3>推理规则</h3>
+          <span class="eyebrow">Rules</span>
+          <span class="panel-right">本关开放 3 条</span>
+        </div>
+        <div class="rules">
+          <button class="rule"><span class="rule-nm">引用前提</span><span class="rule-en">Hyp</span></button>
+          <button class="rule" aria-pressed="true"><span class="rule-nm">蕴含消去 →E</span><span class="rule-en">Imp E</span></button>
+          <button class="rule"><span class="rule-nm">析取消去 ∨E</span><span class="rule-en">Or E</span></button>
+        </div>
+        <p class="rule-hint"><b>蕴含消去 →E：</b>A → B 与 A ⟹ B（假言推理）。第二支里用 p3 与 H2 就能得到 C。</p>
+      </div>
+
+      <div class="guide" data-note="7">
+        <div class="panel-head">
+          <h3>分情况讨论：A 与 B 两支都要推出 C</h3>
+          <span class="eyebrow">Candidates / Case Split</span>
+        </div>
+        <div class="branch branch--done">
+          <span class="branch-mark">✓</span>
+          <span class="branch-text">假设 A 后推出 C</span>
+          <span class="branch-res">已得到 f1：C</span>
+        </div>
+        <div class="branch">
+          <span class="branch-mark">·</span>
+          <span class="branch-text">假设 B 后推出 C</span>
+          <span class="branch-res">未开始</span>
+          <button class="ak-button ak-button--advanced"><span class="ak-button__label">开始这一支：假设 B</span></button>
+        </div>
+        <p class="rule-hint">两支都推出 C 之后，选中 p1（A ∨ B）、p2（A → C）、p3（B → C）再点“析取消去 ∨E”就能收尾。</p>
+      </div>
+
+      <div class="panel" data-note="8">
+        <div class="panel-head">
+          <h3>证明记录</h3>
+          <span class="eyebrow">Proof</span>
+          <span class="panel-right">2 步 · 子证明 1 层开着</span>
+        </div>
+        <div class="panel-body proof">
+          <div class="prow-head"><span>No.</span><span>Formula</span><span>Source</span></div>
+          <div class="prow prow--assume"><span class="prow-no">01</span><span class="prow-f">A</span><span class="prow-src">假设 · 子证明 H1</span></div>
+          <div class="prow prow--derived prow--d1"><span class="prow-no">02</span><span class="prow-f">C</span><span class="prow-src">蕴含消去 →E · 依赖 H1</span></div>
+        </div>
+      </div>
+
+      <div class="assume-bar" data-note="9">
+        <div class="assume-field">
+          <label class="ak-field">
+            <span class="ak-label">子证明 / 假设式</span>
+            <input class="ak-input" placeholder="例如 B 或 not A">
+          </label>
+        </div>
+        <button class="ak-button ak-button--outline"><span class="ak-button__label">打开假设</span></button>
+        <span class="scopes"><span class="scope-chip"><span class="scope-hex">1</span>H1：A</span></span>
+        <button class="ak-button ak-button--advanced"><span class="ak-button__label">提示</span></button>
+      </div>
+
+      <div data-note="10">
+        <aside class="ak-notice ak-notice--warning" role="status">
+          <span class="ak-notice__code">CAUTION</span>
+          <div class="ak-notice__body">
+            <strong class="ak-notice__title">第一支已完成</strong>
+            <p class="ak-notice__message">已得到 f1：C。点上方引导卡里的“开始这一支：假设 B”，第二支也要推出 C。</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ===================== 视图 B · 证明选择 ===================== -->
+<div id="view-levels" hidden>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⊢</span>
+      <span class="brand-txt">
+        <span class="brand-name">证明之路</span>
+        <span class="brand-en">Proof Road / Natural Deduction</span>
+      </span>
+    </div>
+    <nav class="ak-nav" aria-label="主导航">
+      <a class="ak-nav__link" href="#view-desk"><span class="ak-nav__label">证明台</span><span class="ak-nav__description" lang="en">Proof Desk</span></a>
+      <a class="ak-nav__link" href="#view-levels" aria-current="page"><span class="ak-nav__label">关卡</span><span class="ak-nav__description" lang="en">Levels</span></a>
+      <a class="ak-nav__link" href="#doc"><span class="ak-nav__label">公理表</span><span class="ak-nav__description" lang="en">Axioms</span></a>
+    </nav>
+    <div class="topbar-right">
+      <div class="ak-counter-group">
+        <div class="ak-counter">
+          <div class="ak-counter__prefix"><span class="ak-status__signal" style="background:var(--ak-signal-action)"></span></div>
+          <div class="ak-counter__content">12<span style="color:var(--ak-text-secondary);font-size:.875rem"> / 32</span></div>
+        </div>
+      </div>
+      <button class="ak-button ak-button--outline"><span class="ak-button__label">重置进度</span></button>
+    </div>
+  </header>
+
+  <div class="shell shell-select">
+    <main class="stack">
+      <div class="sec-head">
+        <h2>证明选择</h2>
+        <span class="eyebrow">Operation Select</span>
+      </div>
+
+      <section class="ak-tabs" data-ak-tabs>
+        <div class="ak-tabs__list" role="tablist" aria-label="层级">
+          <button class="ak-tabs__tab" role="tab" aria-selected="true">L0 命题逻辑训练场</button>
+          <button class="ak-tabs__tab" role="tab" aria-selected="false" tabindex="-1">L1 代数证明</button>
+        </div>
+        <div class="ak-tabs__panel" role="tabpanel">
+          <span class="ak-tabs__eyebrow">Level 01 — 12 / 16 Cleared</span>
+          <p class="ak-tabs__description" style="margin-top:8px">从引用前提走到分情况讨论。全部 16 关都有标准证明与逐步提示。</p>
+        </div>
+      </section>
+
+      <div class="op-grid" data-note="11">
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">01</span><span class="op-name">引用前提</span><span class="op-code">L0-01</span></button>
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">02</span><span class="op-name">蕴含引入：证明 A → A</span><span class="op-code">L0-02</span></button>
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">03</span><span class="op-name">蕴含消去：假言推理</span><span class="op-code">L0-03</span></button>
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">04</span><span class="op-name">合取消去：从 A ∧ B 取一支</span><span class="op-code">L0-04</span></button>
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">05</span><span class="op-name">合取引入：两边都要证</span><span class="op-code">L0-05</span></button>
+        <button class="op op--done"><span class="op-state">CLEAR</span><span class="op-no">06</span><span class="op-name">析取引入：证一支就够</span><span class="op-code">L0-06</span></button>
+        <button class="op op--now" aria-current="true"><span class="op-state">NOW</span><span class="op-no">07</span><span class="op-name">分情况讨论：析取消去</span><span class="op-code">L0-07</span></button>
+        <button class="op"><span class="op-state">—</span><span class="op-no">08</span><span class="op-name">否定引入：推出矛盾就否定假设</span><span class="op-code">L0-08</span></button>
+        <button class="op"><span class="op-state">—</span><span class="op-no">09</span><span class="op-name">反证法</span><span class="op-code">L0-09</span></button>
+        <button class="op"><span class="op-state">—</span><span class="op-no">10</span><span class="op-name">逆否命题</span><span class="op-code">L0-10</span></button>
+        <button class="op"><span class="op-state">—</span><span class="op-no">11</span><span class="op-name">双重否定</span><span class="op-code">L0-11</span></button>
+        <button class="op"><span class="op-state">OPEN</span><span class="op-no">12</span><span class="op-name">骑士与骗子（开放练习）</span><span class="op-code">L0-12</span></button>
+      </div>
+    </main>
+
+    <aside class="detail">
+      <span class="detail-eyebrow">Selected Operation</span>
+      <span class="detail-code">L0-07</span>
+      <h3 class="detail-title">分情况讨论：析取消去</h3>
+      <div class="detail-goal">
+        <span class="lbl">要证明的结论</span>
+        <span class="fx">C</span>
+      </div>
+      <dl class="detail-rows">
+        <div><dt>所属层级</dt><dd>L0 命题逻辑训练场</dd></div>
+        <div><dt>可用规则</dt><dd>引用前提、蕴含消去 →E、析取消去 ∨E</dd></div>
+        <div><dt>题设</dt><dd>A ∨ B，A → C，B → C</dd></div>
+        <div><dt>标准证明</dt><dd>1 步 · 内置逐步提示</dd></div>
+      </dl>
+      <button class="ak-button ak-button--advanced ak-button--block"><span class="ak-button__label">开始证明</span></button>
+    </aside>
+  </div>
+</div>
+
+<!-- ===================== 设计标注 ===================== -->
+<section class="doc notes">
+  <div class="sec-head" style="margin-bottom:var(--ak-space-5)">
+    <h2>设计标注</h2><span class="eyebrow">对照左上角琥珀色六边形编号</span>
+  </div>
+  <div class="card-doc">
+    <ol style="position:relative;margin:0;padding-left:1.4em;display:grid;gap:10px">
+      <li><b>01 顶栏</b>　ak-ui 的 <code>.ak-nav</code> 双语导航（中文主标签 + 英文补充，来自组件示例的约定），当前页用青线标记。品牌标记用 1.5 倍切角。</li>
+      <li><b>02 关卡索引</b>　当前关卡用 4px 青线 + 半透明填充，完成态只在右侧留绿色 <code>DONE</code>，不做成卡片。</li>
+      <li><b>03 关卡头</b>　编号是琥珀色实底 <code>--ak-signal-action</code>，标题吃 <code>--ak-type-title-size</code>（3rem 粗衬线）。</li>
+      <li><b>04 目标块</b>　全页唯一纸面 <code>--ak-surface-panel</code>。右上角是斜向条纹断口——ak-ui 官网卡片同款细节。</li>
+      <li><b>05 可用事实</b>　题设/假设/推导用 4px 左信号线区分（琥珀=假设、青=推导），选中叠内描边，三重编码不靠颜色单独承担。</li>
+      <li><b>06 推理规则</b>　照搬 ak-ui <code>.ak-command</code> 的语言：抬升表面 + 内嵌 1px 描边框 + 斜向高光 + 底部 5px 信号条（按下才拉起）。</li>
+      <li><b>07 引导卡</b>　琥珀色调的同类面板；已完成的一支加删除线并降明度。</li>
+      <li><b>08 证明记录</b>　固定三槽位（编号｜公式｜来源）；公式用衬线体，编号与来源用等宽。</li>
+      <li><b>09 子证明</b>　层号是六边形，来自 ak-ui 的 <code>--hexagon</code> 状态标记。</li>
+      <li><b>10 状态</b>　直接用 ak-ui <code>.ak-notice--warning</code>，颜色 + 代码标签 + 标题三重编码。</li>
+      <li><b>11 操作卡</b>　关卡网格；当前关卡翻成纸面，是这一屏唯一的亮面。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ===================== 设计说明 ===================== -->
+<section class="doc" id="doc">
+  <div class="sec-head" style="margin:var(--ak-space-6) 0 var(--ak-space-5)">
+    <h2>设计说明</h2><span class="eyebrow">这一节是文档，不属于界面本身</span>
+  </div>
+  <div class="doc-grid">
+
+    <div class="card-doc">
+      <h3>① 这次找到了真正的设计标准</h3>
+      <p><b>官方仍然没有公开设计规范</b>，但社区里有一个成体系的、可安装的设计 skill：</p>
+      <ul>
+        <li><a href="https://github.com/YunYouJun/ak-ui">YunYouJun/ak-ui</a>（MIT）—— 受方舟界面启发的独立设计语言 + 可用的 CSS 基础库，并带一个正式发布的 <b>AI Skill</b>：<code>npx skills add YunYouJun/ak-ui --skill ak-ui</code>。</li>
+        <li>skill 里含 <code>design-language.md</code>（设计契约）、<code>tokens.md</code>（Token 契约）、<code>official-site.md</code>（官网取证）、<code>motion.md</code>、<code>quality-checklist.md</code>（验收清单）。</li>
+        <li>第一版样片之所以不像，是因为我没读这些：面板该是<b>纸面白</b>（<code>--ak-surface-panel</code> 是 <code>rgba(253,253,251,.9)</code>，我却全做成了深灰），标题该是 <b>3rem 粗衬线</b>（我用了 22px），几何该是<b>内嵌描边框 + 底部信号条 + 斜向断口</b>（我全漏了）。</li>
+      </ul>
+      <p style="margin-top:12px">本页直接 vendor 了 <code>@yunyoujun/ak-ui@1.1.0</code> 的编译产物（<code>vendor/ak-ui.min.css</code>，MIT，原样未改），项目自有组件全部通过 <code>--ak-*</code> 语义 token 取值。官方素材边界：ak-ui 明确不还原任何具体游戏画面，本页也没有任何游戏 Logo／立绘／纹理／截图。</p>
+    </div>
+
+    <div class="card-doc">
+      <h3>② ak-ui 设计契约（本次实际遵守的）</h3>
+      <ul>
+        <li><b>先层级后装饰</b>：每块先有大字号主命令、支撑上下文、低语元信息，再谈线条。</li>
+        <li><b>有目的的非对称几何</b>：切角、内嵌描边、错位线条，但不给每个边都加装饰。</li>
+        <li><b>颜色即信号</b>：青=信息、琥珀=操作/警告、橙=局部强调、绿=成功、红=危险；辉光只做局部反馈。</li>
+        <li><b>排版承载结构</b>：中文主命令用粗衬线，正文无衬线，标识符与数值等宽。</li>
+        <li><b>靠表面分层，不堆装饰</b>：纸面白与石墨黑对比，不在同一元素上叠边框+渐变+噪点+辉光。</li>
+        <li><b>反馈至少改两项</b>：悬停改亮度+位移，按下再叠按压，选中拉起底部信号条。</li>
+        <li><b>焦点不被裁切</b>：可点控件的轮廓放在未裁切的外层上。</li>
+      </ul>
+      <p style="margin-top:12px">官方给的失败清单（我第一版几乎全中）：只有黑底 + 青边 + 满屏辉光；每个元素都切角、倾斜、编号；用装饰性数据抢注意力；用"游戏式高密度"为过小控件开脱。</p>
+    </div>
+
+    <div class="card-doc">
+      <h3>③ 实际取用的 Token</h3>
+      <table class="tok">
+        <tr><td>--ak-surface-canvas</td><td><span class="sw" style="background:#111315"></span>#111315</td></tr>
+        <tr><td>--ak-surface-panel（纸面）</td><td><span class="sw" style="background:#fdfdfb"></span>rgba(253,253,251,.9)</td></tr>
+        <tr><td>--ak-surface-raised</td><td><span class="sw" style="background:#424242"></span>rgba(66,66,66,.92)</td></tr>
+        <tr><td>--ak-surface-inverse</td><td><span class="sw" style="background:#17191b"></span>#17191b</td></tr>
+        <tr><td>--ak-text-primary</td><td>#f8f8f5</td></tr>
+        <tr><td>--ak-signal-info</td><td><span class="sw" style="background:#4aabea"></span>#4aabea</td></tr>
+        <tr><td>--ak-signal-action</td><td><span class="sw" style="background:#f1c644"></span>#f1c644</td></tr>
+        <tr><td>--ak-signal-accent</td><td><span class="sw" style="background:#f6540e"></span>#f6540e</td></tr>
+        <tr><td>--ak-color-yellow</td><td><span class="sw" style="background:#ffd802"></span>#ffd802</td></tr>
+        <tr><td>--ak-signal-success / danger</td><td><span class="sw" style="background:#46c47c"></span>#46c47c　<span class="sw" style="background:#e33b3b"></span>#e33b3b</td></tr>
+        <tr><td>--ak-type-title-size</td><td>3rem</td></tr>
+        <tr><td>--ak-type-tight / wide</td><td>-0.04em / 0.12em</td></tr>
+        <tr><td>--ak-line-hairline / strong</td><td>1px / 4px</td></tr>
+        <tr><td>--ak-cut-sm / md / lg</td><td>0.375rem / 0.75rem / 1.5rem</td></tr>
+        <tr><td>--ak-density-control-height</td><td>2.75rem（44px）</td></tr>
+        <tr><td>--ak-motion-fast / base</td><td>120ms / 200ms</td></tr>
+        <tr><td>--ak-ease-standard</td><td>cubic-bezier(.2,0,0,1)</td></tr>
+      </table>
+    </div>
+
+    <div class="card-doc">
+      <h3>④ 下一步</h3>
+      <ul>
+        <li>这份样片只新增 <code>design/</code> 下的文件，没有改动 <code>index.html</code> / <code>styles.css</code>，55 项测试不受影响。</li>
+        <li>要落到真界面，建议照 skill 的「Integrate → Build → Verify」走：vendor <code>tokens.css</code>（或整包 CSS），把现有 <code>styles.css</code> 的圆角/胶囊换成切角与 4px 信号线，再按 <code>quality-checklist.md</code> 逐条验收。</li>
+        <li>仍然待你定：<b>主强调色</b>沿用 ak-ui 的 <code>#4aabea</code> 还是换成官网实测的 <code>#19d1ff</code>；<b>风格强度</b>是 system（当前）还是 terminal。</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<script>
+function setView(v) {
+  document.getElementById('view-desk').hidden = v !== 'desk';
+  document.getElementById('view-levels').hidden = v !== 'levels';
+  document.querySelectorAll('#seg-view button').forEach(function (x) {
+    if (x.dataset.v === v) x.setAttribute('aria-pressed', 'true'); else x.removeAttribute('aria-pressed');
+  });
+}
+document.getElementById('seg-view').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  setView(b.dataset.v); window.scrollTo({ top: 0 });
+});
+document.getElementById('seg-notes').addEventListener('click', function (e) {
+  var b = e.target.closest('button'); if (!b) return;
+  this.querySelectorAll('button').forEach(function (x) { x.removeAttribute('aria-pressed'); });
+  b.setAttribute('aria-pressed', 'true');
+  document.body.classList.toggle('notes-on', b.dataset.v === 'on');
+});
+/* 用 hash 当视图开关，但浏览器会顺带滚到锚点，所以载入后再回顶一次 */
+window.addEventListener('load', function () {
+  if (location.hash === '#view-levels') setView('levels');
+  setTimeout(function () { window.scrollTo(0, 0); }, 0);
+});
+window.addEventListener('hashchange', function () { setView(location.hash === '#view-levels' ? 'levels' : 'desk'); });
+</script>
+</body>
+</html>

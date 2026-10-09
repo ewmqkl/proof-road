@@ -1,8 +1,21 @@
-﻿# 依赖（本项目零依赖，防御性忽略）
+# 依赖（本项目零依赖，防御性忽略）
 node_modules/
 
-# 日志
+# 构建产物
+release/
+desktop/bin/
+desktop/obj/
+desktop/assets/icon-preview.png
+
+# 本机专属：为走加速器而生成的 CA 合并包（见 README 十二节）
+.certs/
+
+# 临时工作目录
+.scratch/
+
+# 日志与临时文件
 *.log
+*.tmp
 
 # 编辑器与系统
 .vscode/

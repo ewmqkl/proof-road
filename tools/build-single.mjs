@@ -10,10 +10,17 @@ const MODULES = [
   'src/core/rules.js',
   'src/core/level-utils.js',
   'src/core/proof.js',
+  'src/core/achievements.js',
+  'src/core/savefile.js',
   'src/data/axioms.js',
   'src/data/levels.js',
   'src/data/found-proofs.js',
+  'src/data/math-history.js',
+  'src/data/achievements.js',
+  'src/data/tutorial.js',
   'src/ui/candidates.js',
+  'src/ui/profile.js',
+  'src/ui/tutorial.js',
   'src/ui/app.js',
 ];
 
@@ -117,4 +124,8 @@ let finalHtml = html
 // 暴露一个调试句柄：既方便自动化检查，也方便你在控制台里试 API
 finalHtml = finalHtml.replace('</script>', 'globalThis.__lpg = reg["src/ui/app.js"];\n</script>');
 await writeFile(resolve(root, 'proof-road-standalone.html'), finalHtml, 'utf8');
-console.log('已生成 proof-road-standalone.html，大小 ' + finalHtml.length + ' 字节，含 ' + MODULES.length + ' 个模块');
+// 注意要报**文件的字节数**：finalHtml.length 是 UTF-16 码元数，
+// 这个文件里满是中文，两者差了十几万，早先的日志就报错过。
+const bytes = Buffer.byteLength(finalHtml, 'utf8');
+console.log('已生成 proof-road-standalone.html，' + bytes + ' 字节（' + (bytes / 1024).toFixed(1) +
+  ' KB），含 ' + MODULES.length + ' 个模块');

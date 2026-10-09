@@ -4,8 +4,15 @@ import './kernel.test.mjs';
 import './printer.test.mjs';
 import './rules.test.mjs';
 import './levels.test.mjs';
+import './history.test.mjs';
+import './achievements.test.mjs';
+import './save.test.mjs';
+import './tutorial.test.mjs';
+import './assets.test.mjs';
 import './ui.test.mjs';
 import './ui-play.test.mjs';
+import './ui-guide.test.mjs';
+import './ui-save.test.mjs';
 import './solver.test.mjs';
 
 const r = await runAll('logic-proof-game 测试');

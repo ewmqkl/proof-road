@@ -1,0 +1,86 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    证明之路 · Windows 桌面版外壳
+    ==================================================================
+    目标：在 Windows 10 / 11 上"双击即用"，不要求目标机器预装任何运行时。
+      * 自包含发布（self-contained），把 .NET 运行时一起打进 exe；
+      * 网页本体（proof-road-standalone.html）作为内嵌资源编译进 exe，不落地、不解包；
+      * 用 127.0.0.1 上的临时端口把网页喂给 WebView2，从而拿到一个真正的 http 源
+        （localStorage 才能持久化进度）；
+      * 万一目标机器没有 WebView2 运行时，自动退回 Edge/Chrome 的应用窗口模式。
+  -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ProofRoad</AssemblyName>
+    <RootNamespace>ProofRoad</RootNamespace>
+    <ApplicationIcon>assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <AutomaticBindingRedirects>false</AutomaticBindingRedirects>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- 不要跟着引用把 XML 文档和 pdb 一起复制进发布目录 -->
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <CopyDebugSymbolFilesFromPackages>false</CopyDebugSymbolFilesFromPackages>
+    <!-- CA1416：本程序只针对 Windows，平台兼容性分析没有意义。
+         WFO0003：WinForms 分析器建议把高 DPI 设置从清单搬到 Application.SetHighDpiMode。
+                  这里刻意保留在清单里——清单在进程启动前就生效，WebView2 的子窗口也会
+                  从一开始就按 PerMonitorV2 处理，比托管代码里再设一次更稳。 -->
+    <NoWarn>$(NoWarn);CA1416;WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <!-- 只在 Windows 上构建；在别的平台上跑 dotnet 时靠这个开关也能出包 -->
+  <PropertyGroup>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <!-- 程序集元数据：资源管理器"属性 → 详细信息"里看到的内容 -->
+  <PropertyGroup>
+    <Product>证明之路</Product>
+    <AssemblyTitle>证明之路 · 从命题逻辑到代数定理</AssemblyTitle>
+    <Description>在 Fitch 式证明台上做自然演绎的数学证明游戏（桌面版）</Description>
+    <Company>Proof Road</Company>
+    <Copyright>MIT License</Copyright>
+    <Version>0.2</Version>
+    <FileVersion>0.2.0.0</FileVersion>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <InformationalVersion>0.2</InformationalVersion>
+    <!-- SDK 默认会往 InformationalVersion 后面缀上 git 提交号，属性页里会显示成
+         "0.2+b98e382…"。工作区带着未提交改动时这个哈希并不代表真实代码状态，关掉。 -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 网页本体直接用仓库根目录里的单文件构建产物，避免出现第二份真相 -->
+    <EmbeddedResource Include="..\proof-road-standalone.html" LogicalName="ProofRoad.Resources.app.html" />
+    <EmbeddedResource Include="assets\app.ico" LogicalName="ProofRoad.Resources.app.ico" />
+  </ItemGroup>
+
+  <!--
+    WebView2 包在 net5.0+ 分支里会无条件引用 WPF 版程序集。本程序只用 WinForms，
+    去掉这个引用可以消掉 MSB3277（WindowsBase 版本冲突）并少带一个用不上的 DLL。
+  -->
+  <Target Name="DropUnusedWebView2WpfReference" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="'%(Reference.Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="EnsureWebBundle" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(MSBuildThisFileDirectory)..\proof-road-standalone.html')"
+           Text="缺少 proof-road-standalone.html。请先在仓库根目录执行：node tools/build-single.mjs" />
+  </Target>
+
+</Project>

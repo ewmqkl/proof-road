@@ -1,43 +1,22 @@
 // tests/ui.test.mjs —— 无浏览器冒烟测试：把 DOM 打桩，直接跑界面代码
 import assert from 'node:assert/strict';
 import { test } from './_runner.mjs';
+import { installDom, flatten, clearStorage } from './_dom.mjs';
 
-/* ---------- 极简 DOM 打桩 ---------- */
-function makeEl(tag) {
-  const el = {
-    // 真实 DOM 里 tagName 是大写，打桩也统一成大写，避免测试辅助函数被大小写坑到
-    tagName: String(tag).toUpperCase(), children: [], _html: '', textContent: '', className: '', hidden: false,
-    value: '', title: '', style: {},
-    get innerHTML() { return this._html; },
-    set innerHTML(v) { this._html = String(v); this.children = []; },
-    appendChild(c) { this.children.push(c); return c; },
-    addEventListener() {},
-    set onclick(fn) { this._onclick = fn; },
-    get onclick() { return this._onclick; },
-  };
-  return el;
-}
-const registry = new Map();
-const document = {
-  createElement: (tag) => makeEl(tag),
-  getElementById: (id) => { if (!registry.has(id)) registry.set(id, makeEl('div')); return registry.get(id); },
-};
-const store = new Map();
-const localStorage = {
-  getItem: (k) => (store.has(k) ? store.get(k) : null),
-  setItem: (k, v) => store.set(k, String(v)),
-  removeItem: (k) => store.delete(k),
-};
-let promptAnswer = null;
-globalThis.document = document;
-globalThis.localStorage = localStorage;
-globalThis.prompt = () => promptAnswer;
+/* ---------- DOM 打桩统一放在 _dom.mjs（多个测试文件共用同一套） ---------- */
+const { registry, localStorage } = installDom();
 
 const app = await import('../src/ui/app.js');
 const { LEVELS } = await import('../src/data/levels.js');
 const { RULES } = await import('../src/core/rules.js');
 
+/* 这一组测试要的是“确定性的初始局面”。
+   自动存档会把上一关推到一半的现场带回来，而各个测试文件共用同一个 app 实例，
+   所以每次载入关卡前先把存档清掉，别去依赖“跑在我前面的是哪个文件”。 */
+function cleanLoad(id) { clearStorage(); app.loadLevel(id); }
+
 test('界面能加载关卡并渲染前提、规则、公理', () => {
+  cleanLoad(LEVELS[0].id);
   const st = app.debugState();
   assert.ok(st, '未加载关卡');
   assert.equal(app.debugLevelId(), LEVELS[0].id);
@@ -49,13 +28,12 @@ test('界面能加载关卡并渲染前提、规则、公理', () => {
 });
 
 test('通过界面走完一个关卡（三段论）', () => {
-  app.loadLevel('L0-13');
+  cleanLoad('L0-13');
   // 目标 A → C：假设 A
   app.debugAssumption('A');
   let st = app.debugState();
   const hId = st.facts.filter((f) => f.rule === 'assume').pop().id;
   app.debugSelect([hId, 'p1']);
-  promptAnswer = null;
   app.debugUseRule('impE');            // A → B, A ⟹ B
   st = app.debugState();
   const bId = st.facts.filter((f) => !f.given && f.rule === 'impE').pop().id;
@@ -71,16 +49,15 @@ test('通过界面走完一个关卡（三段论）', () => {
 });
 
 test('错误操作给出可读提示', () => {
-  app.loadLevel('L0-03');
+  cleanLoad('L0-03');
   app.debugSelect(['p2', 'p1']);   // A 与 A→B（顺序反了也应能推出 B）
-  promptAnswer = null;
   app.debugUseRule('impE');
   assert.equal(app.debugSolved(), true, '→E 应能推出 B');
 });
 
 test('每关都能载入而不报错', () => {
   for (const lv of LEVELS) {
-    app.loadLevel(lv.id);
+    cleanLoad(lv.id);
     assert.equal(app.debugLevelId(), lv.id);
     assert.ok(app.debugGoalText().length > 0, lv.id + ' 目标为空');
   }
@@ -93,12 +70,6 @@ test('规则都有说明与中文名', () => {
   }
 });
 
-function flatten(el, depth = 0) {
-  if (depth > 6) return '';
-  let s = (el.textContent || '') + (el._html || '');
-  for (const c of el.children) s += flatten(c, depth + 1);
-  return s;
-}
 test('提示：解算器的证明也能被界面逐条展示（两种来源都要能走）', async () => {
   const { FOUND_PROOFS } = await import('../src/data/found-proofs.js');
   const { createState, applyStep, matchedFact } = await import('../src/core/proof.js');
@@ -123,7 +94,7 @@ test('提示：每一关都要么给得出步骤、要么明确说明是开放�
   const { FOUND_PROOFS } = await import('../src/data/found-proofs.js');
   let withSteps = 0, open = 0;
   for (const lv of LEVELS) {
-    app.loadLevel(lv.id);
+    cleanLoad(lv.id);
     app.debugHint();
     const msg = app.debugStatusText();
     const hasHand = lv.script && !lv.noScript;
@@ -148,7 +119,7 @@ test('每关的规则清单里出现的规则都真实存在', () => {
   }
 });
 test('界面走查：打开子证明 → →E → 合上，能走通 L0-15 的第一支', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   app.debugAssumption('A');
   assert.equal(app.debugScopes().length, 1, '打开假设后应当有 1 层子证明');
   const facts1 = app.debugFacts();
@@ -166,7 +137,7 @@ test('界面走查：打开子证明 → →E → 合上，能走通 L0-15 的�
 });
 
 test('界面走查：子证明合上后，里面的事实不再可选', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   app.debugAssumption('A');
   const hypA = app.debugFacts().find((f) => f.rule === 'assume');
   app.debugSelectAndUse(['p1', hypA.id], 'impE');
@@ -177,7 +148,7 @@ test('界面走查：子证明合上后，里面的事实不再可选', async ()
   assert.ok(vis.indexOf(bFact.id) < 0, '合上后子证明内的 ' + bFact.id + ' 不该还在可见事实里');
 });
 test('界面走查：两支都合上后用 ∨E 收尾（完整分情况讨论）', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   // 支 1：假设 A → 得 B → 合上得 A → B
   app.debugAssumption('A');
   const hypA = app.debugFacts().find((f) => f.text === 'A' && f.rule === 'assume');
@@ -207,7 +178,7 @@ test('界面走查：两支都合上后用 ∨E 收尾（完整分情况讨论�
   assert.ok(app.debugFacts().some((f) => f.text === 'B' && !f.scope), '应当得到一个不带作用域的 B');
 });
 test('界面引导：选中析取点 ∨E，会给出“分情况讨论”的两支说明（而不是报错）', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   const guides = app.debugGuides(['p4'], 'orE');
   assert.equal(guides.length, 1, '应当给出一条分情况讨论引导：' + JSON.stringify(guides));
   assert.ok(/分情况讨论/.test(guides[0].label), '引导文案不对：' + guides[0].label);
@@ -217,7 +188,7 @@ test('界面引导：选中析取点 ∨E，会给出“分情况讨论”的两
 });
 
 test('界面引导：点“开始这一支”会真的打开对应的子证明', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   const msg = app.debugSelectAndUse(['p4'], 'orE');
   const btns = app.debugChoiceButtons();
   assert.ok(btns.some((b) => /开始这一支：假设 A/.test(b)), '候选面板里应当有“开始这一支”按钮：' + JSON.stringify(btns));
@@ -230,7 +201,7 @@ test('界面引导：点“开始这一支”会真的打开对应的子证明',
 });
 
 test('界面引导：一支达成后，引导会把它标成已完成', async () => {
-  app.loadLevel('L0-15');
+  cleanLoad('L0-15');
   // 先把支 1（假设 A）推出 B 并合上
   app.debugAssumption('A');
   const hypA = app.debugFacts().find((f) => f.text === 'A' && f.rule === 'assume');
@@ -243,7 +214,7 @@ test('界面引导：一支达成后，引导会把它标成已完成', async ()
   assert.ok(guides[0].branches.every((b) => typeof b === 'string'));
 });
 test('界面：排中律会列出可用的 A ∨ ¬A 候选', async () => {
-  app.loadLevel('L0-16');                 // 题设 A → B，目标 ¬A ∨ B
+  cleanLoad('L0-16');                 // 题设 A → B，目标 ¬A ∨ B
   const labels = app.debugCandidates([], 'excludedMiddle');
   assert.ok(labels.length >= 1, '排中律应当有候选：' + JSON.stringify(labels));
   assert.ok(labels.some((l) => /A ∨ ¬A|¬A ∨ A/.test(l)), '应当能对 A 取排中：' + JSON.stringify(labels));
@@ -252,15 +223,79 @@ test('界面：排中律会列出可用的 A ∨ ¬A 候选', async () => {
   const facts = app.debugFacts();
   assert.ok(facts.some((f) => /∨/.test(f.text)), '应当得到一个析取事实：' + JSON.stringify(facts.map((f) => f.text)));
 });
+/* ---------------- 测试钩子 ---------------- */
+const { buttonByText } = await import('./_dom.mjs');
+
+test('关卡选择：点 L1 标签真的会切到 L1 的关卡列表', () => {
+  cleanLoad(LEVELS[0].id);
+  app.debugGo('select');
+  const grid = () => flatten(registry.get('op-grid'));
+  const tabs = () => registry.get('tier-tabs');
+  assert.ok(grid().indexOf('L0-01') >= 0, '默认应当显示 L0：' + grid().slice(0, 120));
+  assert.ok(grid().indexOf('L1-01') < 0, '默认不该混进 L1 的卡片');
+
+  // 点 L1：这是之前的一个真 bug——renderSelect 会用“选中关卡的层级”覆盖 pickedTier，
+  // 于是刚设好的 L1 立刻被改回 L0，玩家看到的就是“点 L1 没反应”。
+  const tab1 = buttonByText(tabs(), /L1/);
+  assert.ok(tab1, '应当有一个 L1 标签：' + flatten(tabs()));
+  tab1.onclick();
+  assert.ok(grid().indexOf('L1-01') >= 0, '点了 L1 之后该显示 L1 的卡片：' + grid().slice(0, 120));
+  assert.ok(grid().indexOf('L0-01') < 0, '切到 L1 后不该还显示 L0 的卡片');
+  // 标签的选中态也要跟着换
+  assert.ok(/is-on/.test(tabs().children[1].className), 'L1 标签应当处于选中态：' + tabs().children[1].className);
+  assert.ok(!/is-on/.test(tabs().children[0].className), 'L0 标签不该还亮着');
+
+  // 详情面板也要跟着走，不能停在另一层
+  const detail = flatten(registry.get('detail'));
+  assert.ok(detail.indexOf('L1-01') >= 0, '详情面板应当切到 L1 的第一关：' + detail.slice(0, 200));
+
+  // 再点回 L0
+  const tab0 = buttonByText(tabs(), /L0/);
+  assert.ok(tab0, '应当有一个 L0 标签');
+  tab0.onclick();
+  assert.ok(grid().indexOf('L0-01') >= 0, '切回 L0 应当恢复：' + grid().slice(0, 120));
+  assert.ok(grid().indexOf('L1-01') < 0, '切回 L0 后不该还有 L1 的卡片');
+});
+
+test('关卡选择：点 L1 的卡片再开始证明，打开的确实是那一关', () => {
+  cleanLoad(LEVELS[0].id);
+  app.debugGo('select');
+  buttonByText(registry.get('tier-tabs'), /L1/).onclick();
+  const card = buttonByText(registry.get('op-grid'), /L1-03/);
+  assert.ok(card, 'L1 列表里应当有 L1-03 的卡片：' + flatten(registry.get('op-grid')).slice(0, 200));
+  card.onclick();                                      // 选中它 → 详情面板刷新
+  const detail = flatten(registry.get('detail'));
+  assert.ok(detail.indexOf('L1-03') >= 0, '详情面板应当显示 L1-03：' + detail.slice(0, 200));
+  const start = buttonByText(registry.get('detail'), /开始证明|重新证明/);
+  assert.ok(start, '详情面板应当有开始按钮');
+  start.onclick();
+  assert.equal(app.debugLevelId(), 'L1-03', '点开始证明应当进入 L1-03');
+  assert.ok(app.debugGoalText().length > 0);
+});
+
+test('关卡选择：详情面板上有存档入口', () => {
+  cleanLoad(LEVELS[0].id);
+  app.debugGo('select');
+  const detail = flatten(registry.get('detail'));
+  assert.ok(detail.indexOf('存档 / 读档') >= 0, '详情面板应当有存档按钮：' + detail.slice(0, 200));
+  assert.ok(detail.indexOf('自动存档') >= 0, '应当有一句自动存档的说明');
+  buttonByText(registry.get('detail'), /存档 \/ 读档/).onclick();
+  assert.equal(app.debugArchiveTab(), 'save', '应当直接停在存档分页');
+  assert.equal(app.debugScreen(), 'archive', '应当进档案室');
+});
+
 test('空题设关卡（L0-02 证明 A → A）：载入后要告诉玩家先开子证明', async () => {
-  app.loadLevel('L0-02');
+  // 自动存档会把上一次推到一半的现场带回来，所以这一组测试先清空存档
+  clearStorage();
+  cleanLoad('L0-02');
   assert.deepEqual(app.debugFacts(), [], 'L0-02 本来就没有题设');
   const text = app.debugFactsText();
   assert.ok(text.indexOf('本关没有题设') >= 0, '事实面板应当给出空状态提示：' + text);
 });
 
 test('空题设关卡：点隐含引入会给出“假设什么”的引导，并能一键打开子证明', async () => {
-  app.loadLevel('L0-02');
+  clearStorage();
+  cleanLoad('L0-02');
   const guides = app.debugGuides([], 'impI');
   assert.equal(guides.length, 1, '应当给出一条开子证明的引导：' + JSON.stringify(guides));
   assert.ok(/假设 A/.test(guides[0].label), '引导应说明该假设 A：' + guides[0].label);
@@ -276,7 +311,8 @@ test('空题设关卡：点隐含引入会给出“假设什么”的引导，�
 });
 
 test('空题设关卡：按引导走完 L0-02（假设 → 引用前提 → 合上）', async () => {
-  app.loadLevel('L0-02');
+  clearStorage();
+  cleanLoad('L0-02');
   app.debugAssumption('A');
   const h = app.debugFacts().find((f) => f.rule === 'assume');
   const m1 = app.debugSelectAndUse([h.id], 'hyp');
@@ -289,9 +325,10 @@ test('空题设关卡：按引导走完 L0-02（假设 → 引用前提 → 合�
 });
 test('凡是载入后没有任何可用事实的关卡，都必须给出提示与开子证明的引导', async () => {
   const { LEVELS } = await import('../src/data/levels.js');
+  clearStorage();                       // 不受前面测试留下的自动存档影响
   let empty = 0;
   for (const lv of LEVELS) {
-    app.loadLevel(lv.id);
+    cleanLoad(lv.id);
     const facts = app.debugFacts();
     if (facts.length) continue;
     empty++;
