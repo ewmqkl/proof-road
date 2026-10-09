@@ -1,0 +1,4660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>证明之路 · 从命题逻辑到代数定理</title>
+<style>
+:root {
+  --bg: #0f1115; --panel: #171a21; --panel2: #1d2129; --line: #2a2f3a;
+  --fg: #e8eaf0; --dim: #98a2b3; --accent: #6ea8fe; --ok: #4ade80; --bad: #f87171; --warn: #fbbf24;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.6 "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-bottom: 1px solid var(--line); background: #12151b; position: sticky; top: 0; z-index: 5; }
+.brand { display: flex; gap: 12px; align-items: center; }
+.logo { font-size: 30px; color: var(--accent); }
+h1 { font-size: 19px; margin: 0; }
+.sub { margin: 0; color: var(--dim); font-size: 12.5px; }
+.stats { display: flex; gap: 12px; align-items: center; color: var(--dim); }
+main { display: grid; grid-template-columns: 260px 1fr; gap: 18px; padding: 18px 22px 60px; align-items: start; }
+.sidebar { position: sticky; top: 78px; max-height: calc(100vh - 100px); overflow: auto; }
+.level-list { display: flex; flex-direction: column; gap: 6px; }
+.tier-head { color: var(--dim); font-size: 12px; margin: 10px 0 2px; letter-spacing: .06em; }
+.level-item { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; background: var(--panel); border: 1px solid transparent; cursor: pointer; font-size: 13.5px; }
+.level-item:hover { border-color: var(--line); }
+.level-item.active { border-color: var(--accent); background: #1b2233; }
+.level-item .dot { width: 15px; text-align: center; color: var(--dim); }
+.level-item.done .dot { color: var(--ok); }
+.workspace { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.level-head { display: flex; align-items: baseline; gap: 12px; }
+.level-head h2 { margin: 0; font-size: 20px; }
+.tier { color: var(--dim); font-size: 12.5px; border: 1px solid var(--line); padding: 1px 8px; border-radius: 999px; }
+.goal-box { background: linear-gradient(180deg,#1b2130,#171a21); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+.goal-box .label { color: var(--dim); font-size: 12px; }
+.goal { font-size: 21px; font-family: "Cambria Math", "Latin Modern Math", Georgia, serif; margin-top: 4px; }
+.openvars { color: var(--dim); font-size: 12.5px; margin-top: 4px; }
+.teach { color: #cbd5e1; margin: 0; }
+.premise-note { color: var(--dim); margin: 0; font-size: 13.5px; }
+.panels { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; align-items: start; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.panel-head { display: flex; justify-content: space-between; padding: 9px 13px; border-bottom: 1px solid var(--line); color: var(--dim); font-size: 13px; background: var(--panel2); }
+.panel-foot { display: flex; gap: 8px; padding: 9px 13px; border-top: 1px solid var(--line); }
+.facts { max-height: 380px; overflow: auto; padding: 6px; }
+.fact { display: flex; gap: 9px; align-items: flex-start; padding: 7px 9px; border-radius: 7px; cursor: pointer; border: 1px solid transparent; }
+.fact:hover { background: #1e2430; }
+.fact.sel { background: #1c2740; border-color: var(--accent); }
+.fact.assume { border-left: 3px solid var(--warn); }
+.fact.derived { border-left: 3px solid var(--ok); }
+.fact .fx { font-family: "Cambria Math", Georgia, serif; font-size: 16px; }
+.fact .meta { color: var(--dim); font-size: 11.5px; }
+.fact .id { color: #64748b; font-size: 11.5px; min-width: 34px; }
+.rules { display: flex; flex-wrap: wrap; gap: 7px; padding: 11px; }
+.rule { background: #202634; border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 13.5px; }
+.rule:hover { border-color: var(--accent); background: #242c3d; }
+.rule.primary { background: #2b3a5c; border-color: #3d5892; }
+.choices { border-top: 1px dashed var(--line); padding: 10px 11px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; background: #14181f; }
+.choices-head { color: var(--warn); font-size: 13px; width: 100%; margin-bottom: 2px; }
+.proof-area { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.proof { margin: 0; padding: 10px 14px 14px 34px; display: flex; flex-direction: column; gap: 5px; }
+.proof li { font-size: 14px; }
+.proof .why { color: var(--dim); font-size: 12px; margin-left: 8px; }
+.assume-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--dim); }
+.scopes { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-left: 4px; }
+.guide { border: 1px solid #3d5892; background: #151d2e; border-radius: 10px; padding: 10px 12px; margin: 8px 0; text-align: left; }
+.guide-head { font-size: 13.5px; color: #cfe0ff; margin-bottom: 8px; }
+.guide-branch { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 6px 0; border-top: 1px solid #232c40; font-size: 13px; color: var(--dim); }
+.guide-branch .mark { color: #6f7d99; }
+.guide-branch.done .mark { color: #5fd39a; }
+.guide-branch.done { color: #9fd8bb; }
+.guide-tip { margin-top: 8px; font-size: 12.5px; color: var(--dim); }
+.facts-empty { padding: 14px 12px; border: 1px dashed var(--line); border-radius: 10px; color: var(--dim); font-size: 13px; line-height: 1.6; }
+.scope-chip { border: 1px solid #3d5892; background: #1b2740; color: #cfe0ff; border-radius: 999px; padding: 4px 10px; font-size: 12.5px; }
+.scope-none { color: var(--dim); font-size: 12.5px; }
+.fact.closed { opacity: .45; }
+.fact.depth1 { margin-left: 14px; }
+.fact.depth2 { margin-left: 28px; }
+.fact.depth3 { margin-left: 42px; }
+input { background: #12151b; border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 8px 11px; font-size: 14px; min-width: 260px; }
+button { background: #202634; border: 1px solid var(--line); color: var(--fg); border-radius: 8px; padding: 8px 13px; cursor: pointer; font-size: 13.5px; }
+button:hover { border-color: var(--accent); }
+button.primary { background: #2b3a5c; border-color: #3d5892; }
+button.ghost { background: transparent; color: var(--dim); }
+.status { padding: 11px 14px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel); font-size: 14px; }
+.status.ok { border-color: #2f6b46; background: #14261c; color: #b7f7cf; }
+.status.bad { border-color: #7f2b2b; background: #2a1618; color: #ffc9c9; }
+.status.warn { border-color: #7a5a17; background: #2a2413; color: #ffe6a8; }
+.axioms { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.axioms table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.axioms td { padding: 4px 6px; border-bottom: 1px solid #232833; vertical-align: top; }
+.axioms td.n { color: var(--accent); width: 52px; }
+.axioms td.f { font-family: "Cambria Math", Georgia, serif; }
+.axioms td.d { color: var(--dim); }
+@media (max-width: 1000px) { main { grid-template-columns: 1fr; } .panels { grid-template-columns: 1fr; } .sidebar { position: static; max-height: none; } }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⊢</span>
+    <div>
+      <h1>证明之路</h1>
+      <p class="sub">用命题逻辑与自然演绎，一步步推出中学数学定理</p>
+    </div>
+  </div>
+  <div class="stats">
+    <span id="progress-text">0 / 0 关</span>
+    <button id="btn-reset" class="ghost" title="清空本地进度">重置进度</button>
+  </div>
+</header>
+<main>
+  <aside class="sidebar"><div id="level-list" class="level-list"></div></aside>
+  <section class="workspace">
+    <div class="level-head">
+      <h2 id="level-title">载入中…</h2>
+      <div class="tier" id="level-tier"></div>
+    </div>
+    <div class="goal-box">
+      <div class="label">要证明的结论</div>
+      <div class="goal" id="goal-text">—</div>
+      <div class="openvars" id="goal-openvars"></div>
+    </div>
+    <p class="teach" id="level-teach"></p>
+    <p class="premise-note" id="level-premises"></p>
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-head"><span>可用事实（点选作为前提）</span><span class="hint" id="select-hint">已选 0 条</span></div>
+        <div class="facts" id="facts"></div>
+        <div class="panel-foot">
+          <button id="btn-instantiate" class="ghost">展开全称公理（自动实例化）</button>
+          <button id="btn-undo" class="ghost">撤销一步</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>推理规则</span><span class="hint" id="rule-hint">先选前提，再点规则</span></div>
+        <div class="rules" id="rules"></div>
+        <div class="choices" id="choices" hidden></div>
+      </div>
+    </div>
+    <div class="proof-area">
+      <div class="panel-head"><span>证明记录</span><span class="hint" id="proof-hint"></span></div>
+      <ol class="proof" id="proof"></ol>
+    </div>
+    <div class="assume-bar">
+      <span>子证明：</span>
+      <input id="assume-input" placeholder="输入假设式，例如 A 或 not B">
+      <button id="btn-assume">打开假设</button>
+      <button id="btn-hint" class="primary">提示</button>
+      <span class="scopes" id="scope-list"></span>
+    </div>
+    <div class="status" id="status">选好前提后点击规则即可推进一步。</div>
+    <div class="axioms-toggle"><button id="btn-axioms" class="ghost">查看本关公理表</button></div>
+    <div class="axioms" id="axioms" hidden></div>
+  </section>
+</main>
+<script type="module">
+const reg = {};
+reg["src/core/logic.js"] = (function () {
+  let m;
+m = {};
+// core/logic.js —— 内核：项、公式、de Bruijn 绑定、替换、解析、打印
+// 零依赖，浏览器与 Node 均可直接 import。
+
+/* ============================ 1. 项 (Term) ============================ */
+
+const v = (name, free = false) => ({ k: 'v', name, free });
+const c0 = (name, ...args) => ({ k: 'c', name, args });
+const lit = (n) => ({ k: 'n', n });
+const B = (i) => ({ k: 'b', i });          // de Bruijn 索引，0 = 最内层
+const EV = (name) => ({ k: 'e', name });   // 元变量（证明中的待实例化占位）
+
+/* ============================ 2. 公式 (Formula) ============================ */
+
+const TOP = { k: 'top' };
+const BOT = { k: 'bot' };
+const atom = (name, ...args) => ({ k: 'atom', name, args });
+const eq = (a, b) => ({ k: 'eq', a, b });
+const not = (a) => ({ k: 'not', a });
+const and = (a, b) => ({ k: 'and', a, b });
+const or = (a, b) => ({ k: 'or', a, b });
+const imp = (a, b) => ({ k: 'imp', a, b });
+const iff = (a, b) => ({ k: 'iff', a, b });
+const all = (name, body) => ({ k: 'all', name, body });
+const ex = (name, body) => ({ k: 'ex', name, body });
+
+/* ==================== 3. 自由变量 / 元变量 工具 ==================== */
+
+function freeVarsOfTerm(t, acc = new Set()) {
+  if (t.k === 'v' && t.free) acc.add(t.name);
+  else if (t.k === 'e') acc.add(t.name);
+  else if (t.k === 'c') for (const a of t.args) freeVarsOfTerm(a, acc);
+  return acc;
+}
+function freeVars(f, acc = new Set()) {
+  switch (f.k) {
+    case 'atom': for (const t of f.args) freeVarsOfTerm(t, acc); return acc;
+    case 'eq': freeVarsOfTerm(f.a, acc); freeVarsOfTerm(f.b, acc); return acc;
+    case 'not': return freeVars(f.a, acc);
+    case 'and': case 'or': case 'imp': case 'iff':
+      freeVars(f.a, acc); return freeVars(f.b, acc);
+    case 'all': case 'ex': {
+      const before = new Set(acc);
+      freeVars(f.body, acc);
+      for (const n of before) acc.delete(n);
+      return acc;
+    }
+    default: return acc;
+  }
+}
+const isClosed = (f) => freeVars(f).size === 0;
+
+/* ==================== 4. 替换 (打开 / 闭合) ==================== */
+
+function openAtTerm(t, idx, sub) {
+  switch (t.k) {
+    case 'b': return t.i === idx ? sub : (t.i > idx ? B(t.i - 1) : t);
+    case 'c': return c0(t.name, ...t.args.map((a) => openAtTerm(a, idx, sub)));
+    default: return t;
+  }
+}
+function openAt(f, idx, sub) {
+  switch (f.k) {
+    case 'atom': return atom(f.name, ...f.args.map((t) => openAtTerm(t, idx, sub)));
+    case 'eq': return eq(openAtTerm(f.a, idx, sub), openAtTerm(f.b, idx, sub));
+    case 'not': return not(openAt(f.a, idx, sub));
+    case 'and': return and(openAt(f.a, idx, sub), openAt(f.b, idx, sub));
+    case 'or': return or(openAt(f.a, idx, sub), openAt(f.b, idx, sub));
+    case 'imp': return imp(openAt(f.a, idx, sub), openAt(f.b, idx, sub));
+    case 'iff': return iff(openAt(f.a, idx, sub), openAt(f.b, idx, sub));
+    case 'all': return all(f.name, openAt(f.body, idx + 1, sub));
+    case 'ex': return ex(f.name, openAt(f.body, idx + 1, sub));
+    default: return f;
+  }
+}
+function closeAtTerm(t, idx, name) {
+  switch (t.k) {
+    case 'b': return t.i >= idx ? B(t.i + 1) : t;
+    case 'v': return (t.free && t.name === name) ? B(idx) : t;
+    case 'c': return c0(t.name, ...t.args.map((a) => closeAtTerm(a, idx, name)));
+    default: return t;
+  }
+}
+function closeAt(f, idx, name) {
+  switch (f.k) {
+    case 'atom': return atom(f.name, ...f.args.map((t) => closeAtTerm(t, idx, name)));
+    case 'eq': return eq(closeAtTerm(f.a, idx, name), closeAtTerm(f.b, idx, name));
+    case 'not': return not(closeAt(f.a, idx, name));
+    case 'and': return and(closeAt(f.a, idx, name), closeAt(f.b, idx, name));
+    case 'or': return or(closeAt(f.a, idx, name), closeAt(f.b, idx, name));
+    case 'imp': return imp(closeAt(f.a, idx, name), closeAt(f.b, idx, name));
+    case 'iff': return iff(closeAt(f.a, idx, name), closeAt(f.b, idx, name));
+    case 'all': return all(f.name, closeAt(f.body, idx + 1, name));
+    case 'ex': return ex(f.name, closeAt(f.body, idx + 1, name));
+    default: return f;
+  }
+}
+const instAll = (f, t) => openAt(f.body, 0, t);
+const genEx = (f, fvName, witness) => ex(fvName, closeAt(f, 0, witness.name));
+
+/* ==================== 5. α 等价 ==================== */
+
+function termEq(a, b) {
+  if (a === b) return true;
+  if (a.k !== b.k) return false;
+  switch (a.k) {
+    case 'b': return a.i === b.i;
+    case 'n': return a.n === b.n;
+    case 'v': return a.name === b.name && a.free === b.free;
+    case 'e': return a.name === b.name;
+    case 'c': return a.name === b.name && a.args.length === b.args.length && a.args.every((x, i) => termEq(x, b.args[i]));
+    default: return false;
+  }
+}
+function alphaEq(a, b) {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (a.k !== b.k) return false;
+  // 项也带 k 字段：交给 termEq，避免把 a = b 与 b = c 判成不等
+  if (TERM_KINDS.has(a.k)) return termEq(a, b);
+  switch (a.k) {
+    case 'top': case 'bot': return true;
+    case 'atom': return a.name === b.name && a.args.length === b.args.length && a.args.every((x, i) => termEq(x, b.args[i]));
+    case 'eq': return termEq(a.a, b.a) && termEq(a.b, b.b);
+    case 'not': return alphaEq(a.a, b.a);
+    case 'and': case 'or': case 'imp': case 'iff': return alphaEq(a.a, b.a) && alphaEq(a.b, b.b);
+    case 'all': case 'ex': return alphaEq(a.body, b.body);
+    default: return false;
+  }
+}
+
+/* ==================== 6. 打印 ==================== */
+
+const TERM_KINDS = new Set(['v', 'n', 'c', 'b', 'e']);
+const PREC = { iff: 1, imp: 2, or: 3, and: 4, not: 5, cmp: 6, add: 7, mul: 8, post: 9, atom: 10 };
+const INFIX = { add: '+', sub: '-', mul: '*', div: '/' };
+const REL = { lt: '<', le: '≤', gt: '>', ge: '≥' };
+
+function ctxName(ctx, i) { return ctx[i] !== undefined ? ctx[i] : ('x' + (i + 1)); }
+function wrap(s, p, outer) { return p < outer ? '(' + s + ')' : s; }
+
+// force = 是否必须加括号（由调用方根据优先级与结合方向决定）。
+// 每个节点的括号需求只由“父级要求”决定，绝不把父级要求继续传给子节点，
+// 否则会出现 x * (x + x) 被打印成 x * x + x 这类错误。
+function termStr(t, ctx = [], force = false) {
+  const par = (s) => (force ? '(' + s + ')' : s);
+  switch (t.k) {
+    case 'b': return ctxName(ctx, t.i);
+    case 'v': case 'e': return t.name;
+    case 'n': return String(t.n);                  // 原子：无需括号
+    case 'c': {
+      const name = t.name, args = t.args;
+      if (INFIX[name] && args.length === 2) {
+        // 左结合（+ - * /）：左孩子同级可省（依赖左结合重解析），右孩子同级必须括
+        const rel = (name === 'add' || name === 'sub') ? PREC.add : PREC.mul;
+        const needLeft = isLooser(args[0], rel);
+        const needRight = !isTighter(args[1], rel);
+        const s = termStr(args[0], ctx, needLeft) + ' ' + INFIX[name] + ' ' + termStr(args[1], ctx, needRight);
+        return par(s);
+      }
+      if (name === 'neg' && args.length === 1) return par('-' + termStr(args[0], ctx, true));
+      // 后缀运算：底数必须是一元项，否则加括号（(2 + 3)² 不能写成 2 + 3²）
+      if (name === 'sq' && args.length === 1) return par(termStr(args[0], ctx, true) + '²');
+      if (name === 'pow' && args.length === 2) return par(termStr(args[0], ctx, false) + '^' + termStr(args[1], ctx, false));
+      if (args.length === 0) return name;
+      if (name === 'abs' && args.length === 1) return par('|' + termStr(args[0], ctx, false) + '|');
+      if (name === 'set') return par('{' + args.map((a) => termStr(a, ctx, false)).join(', ') + '}');
+      return par(name + '(' + args.map((a) => termStr(a, ctx, false)).join(', ') + ')');
+    }
+    default: return '?';
+  }
+}
+// 顶层结合力：null = 原子/后缀/函数调用（最紧），否则为中缀运算符的结合力
+function topLevel(t) {
+  if (t.k !== 'c') return null;
+  if (INFIX[t.name] && t.args.length === 2) return (t.name === 'add' || t.name === 'sub') ? PREC.add : PREC.mul;
+  if (t.name === 'neg') return PREC.mul;
+  return null;
+}
+function isLooser(t, rel) { const lvl = topLevel(t); return lvl !== null && lvl < rel; }
+function isTighter(t, rel) { const lvl = topLevel(t); return lvl === null || lvl > rel; }
+
+// 公式打印：只有双子句的连接词才需要“更紧才免括号”，一元连接词与量词内部一律完整打印。
+// 这样 (2 + 3) = 5 不会被写成 2 + 3 = 5 那种丢括号的形式。
+function fstr(f, ctx = [], force = false) {
+  const par = (s) => (force ? '(' + s + ')' : s);
+  switch (f.k) {
+    case 'top': return '⊤';
+    case 'bot': return '⊥';
+    case 'atom': {
+      const name = f.name, args = f.args;
+      if (name === 'mem' && args.length === 2) return par(termStr(args[0], ctx, pr(f.args[0])) + ' ∈ ' + termStr(args[1], ctx, pr(f.args[1])));
+      if (REL[name] && args.length === 2) return par(termStr(args[0], ctx, pr(f.args[0])) + ' ' + REL[name] + ' ' + termStr(args[1], ctx, pr(f.args[1])));
+      if (args.length === 0) return name;
+      return par(name + '(' + args.map((a) => termStr(a, ctx, false)).join(', ') + ')');
+    }
+    case 'eq': return par(termStr(f.a, ctx, pr(f.a)) + ' = ' + termStr(f.b, ctx, pr(f.b)));
+    case 'not': return par('¬' + fstr(f.a, ctx, true));
+    case 'and': case 'or': case 'imp': case 'iff': {
+      const lvl = { and: PREC.and, or: PREC.or, imp: PREC.imp, iff: PREC.iff }[f.k];
+      const sym = { and: ' ∧ ', or: ' ∨ ', imp: ' → ', iff: ' ↔ ' }[f.k];
+      // 子公式必须“本来就比本连接词更紧”才免括号：这样 A ∧ (B ∨ A) 不会退化成 A ∧ B ∨ A
+      const needParen = (child) => {
+        const cl = fLevel(child);
+        return cl !== null && cl <= lvl;
+      };
+      return par(fstr(f.a, ctx, needParen(f.a)) + sym + fstr(f.b, ctx, needParen(f.b)));
+    }
+    case 'all': return par('∀' + f.name + ', ' + fstr(f.body, [f.name].concat(ctx), false));
+    case 'ex': return par('∃' + f.name + ', ' + fstr(f.body, [f.name].concat(ctx), false));
+    default: return '?';
+  }
+}
+// 关系原子里的项：解析器会一直读到关系符号为止，因此加减法也不必加括号（课本写法 x + 0 = x）
+function pr(t) { return false; }
+// 公式顶层结合力；null = 原子/否定/量词（最紧）
+function fLevel(f) {
+  switch (f.k) {
+    case 'and': return PREC.and;
+    case 'or': return PREC.or;
+    case 'imp': return PREC.imp;
+    case 'iff': return PREC.iff;
+    default: return null;
+  }
+}
+const P = (f) => fstr(f);
+
+/* 语义等价的规范键：忽略 free 提示位（它只影响解析时的归类，不改变含义），
+   保留 de Bruijn 索引以维持绑定结构。用于比较“两个项/公式是不是同一个”。 */
+function termKey(t) {
+  switch (t.k) {
+    case 'v': return 'v:' + t.name;   // free 只是解析提示，不影响含义
+    case 'e': return 'e:' + t.name;
+    case 'b': return 'b:' + t.i;
+    case 'n': return 'n:' + t.n;
+    case 'c': return 'c:' + t.name + '(' + t.args.map(termKey).join(',') + ')';
+    default: return '?';
+  }
+}
+function fkey(f) {
+  switch (f.k) {
+    case 'top': case 'bot': return f.k;
+    case 'atom': return 'a:' + f.name + '(' + f.args.map(termKey).join(',') + ')';
+    case 'eq': return 'eq:' + termKey(f.a) + '=' + termKey(f.b);
+    case 'not': return 'not(' + fkey(f.a) + ')';
+    case 'and': case 'or': case 'imp': case 'iff': return f.k + '(' + fkey(f.a) + ',' + fkey(f.b) + ')';
+    case 'all': case 'ex': return f.k + '(' + fkey(f.body) + ')';
+    default: return '?';
+  }
+}
+
+function symbolsInTerm(t, out = { vars: new Set(), funcs: new Set() }) {
+  if (t.k === 'v' || t.k === 'e') out.vars.add(t.name);
+  else if (t.k === 'c') { out.funcs.add(t.name); t.args.forEach((a) => symbolsInTerm(a, out)); }
+  return out;
+}
+function symbolsIn(f, out = { vars: new Set(), funcs: new Set() }) {
+  switch (f.k) {
+    case 'atom': f.args.forEach((t) => symbolsInTerm(t, out)); break;
+    case 'eq': symbolsInTerm(f.a, out); symbolsInTerm(f.b, out); break;
+    case 'not': symbolsIn(f.a, out); break;
+    case 'and': case 'or': case 'imp': case 'iff': symbolsIn(f.a, out); symbolsIn(f.b, out); break;
+    case 'all': case 'ex': symbolsIn(f.body, out); break;
+  }
+  return out;
+}
+
+/* ==================== 7. 记号表 (Signature) ==================== */
+
+const DEFAULT_SIG = {
+  atoms: [],
+  funcs: {
+    add: { arity: 2 }, sub: { arity: 2 }, mul: { arity: 2 }, div: { arity: 2 },
+    neg: { arity: 1 }, abs: { arity: 1 }, sq: { arity: 1 },
+  },
+  preds: {
+    lt: { arity: 2 }, le: { arity: 2 }, gt: { arity: 2 }, ge: { arity: 2 }, mem: { arity: 2 },
+  },
+  consts: ['0', '1'],
+};
+function makeSig(extra = {}) {
+  return {
+    atoms: (DEFAULT_SIG.atoms || []).concat(extra.atoms || []),
+    funcs: Object.assign({}, DEFAULT_SIG.funcs, extra.funcs || {}),
+    preds: Object.assign({}, DEFAULT_SIG.preds, extra.preds || {}),
+    consts: DEFAULT_SIG.consts.concat(extra.consts || []),
+  };
+}
+
+/* ==================== 8. 词法 ==================== */
+
+const MULTI = ['<->', '<-', '->', '/\\', '\\/', '!=', '<=', '>=', '=>', '<>'];
+const SYMBOLS = '()[],.:∀∃¬∧∨→↔∈≤≥≠=+-*/^<>|²√⊤⊥';
+const KEYWORDS = new Set(['forall', 'exists', 'all', 'ex', 'and', 'or', 'not', 'imp', 'iff', 'true', 'false']);
+
+function lex(src) {
+  const toks = [];
+  let i = 0;
+  const push = (type, value) => toks.push({ type, value });
+  while (i < src.length) {
+    const ch = src[i];
+    if (/\s/.test(ch)) { i++; continue; }
+    let matched = false;
+    for (const m of MULTI) {
+      if (src.startsWith(m, i)) { push('punc', m); i += m.length; matched = true; break; }
+    }
+    if (matched) continue;
+    if (SYMBOLS.indexOf(ch) >= 0) { push('punc', ch); i++; continue; }
+    if (/[0-9]/.test(ch)) {
+      let j = i; while (j < src.length && /[0-9]/.test(src[j])) j++;
+      push('num', src.slice(i, j)); i = j; continue;
+    }
+    if (/[A-Za-z_\u4e00-\u9fff]/.test(ch)) {
+      let j = i;
+      while (j < src.length && /[A-Za-z0-9_'\u4e00-\u9fff]/.test(src[j])) j++;   // ∀/∃ 只作单字符量词记号
+      push('ident', src.slice(i, j)); i = j; continue;
+    }
+    throw new Error('无法识别的字符: ' + ch + ' (位置 ' + i + ')');
+  }
+  return toks;
+}
+
+/* ==================== 9. 语法分析 ==================== */
+
+class Parser {
+  constructor(src, sig = makeSig(), opts = {}) {
+    this.toks = lex(src);
+    this.i = 0;
+    this.sig = sig;
+    this.opts = opts;
+    this.lenient = !!opts.lenient;   // 探测模式：允许未登记的裸变量充当命题原子
+    this.bound = [];
+  }
+  peek(o = 0) { return this.toks[this.i + o]; }
+  at(type, value) { const t = this.peek(); return !!t && t.type === type && (value === undefined || t.value === value); }
+  accept(type, value) { if (this.at(type, value)) { this.i++; return true; } return false; }
+  expect(type, value) {
+    if (!this.accept(type, value)) {
+      const t = this.peek();
+      throw new Error('期望 ' + (value !== undefined ? value : type) + '，实际遇到 ' + (t ? JSON.stringify(t.value) : '结束'));
+    }
+  }
+  name() {
+    const t = this.peek();
+    if (!t || (t.type !== 'ident' && t.type !== 'num')) throw new Error('期望标识符，实际遇到 ' + (t ? JSON.stringify(t.value) : '结束'));
+    this.i++;
+    return t.value;
+  }
+  sigLookup(name, kind) { return this.sig[kind] && Object.prototype.hasOwnProperty.call(this.sig[kind], name) ? this.sig[kind][name] : null; }
+  atomArity(name) { const p = this.sigLookup(name, 'preds'); return p ? p.arity : null; }
+  // 命题原子名：零元谓词，或 sig.atoms 中登记的名字（如 A、B、P、Q）
+  isAtomName(name) {
+    if (this.atomArity(name) === 0) return true;
+    return Array.isArray(this.sig.atoms) && this.sig.atoms.indexOf(name) >= 0;
+  }
+  isVarName(name) {
+    if (this.bound.indexOf(name) >= 0) return true;
+    if (this.opts.fixed && this.opts.fixed.has(name)) return false;
+    if (this.sigLookup(name, 'funcs') || this.sigLookup(name, 'preds')) return false;
+    if (this.sig.consts.indexOf(name) >= 0) return false;
+    if (KEYWORDS.has(name)) return false;
+    return true;
+  }
+
+  parseTerm() { return this.pAdd(); }
+  pAdd() {
+    const __i0 = this.i;
+    let left = this.pMul();
+    if (globalThis.__DBG_PAREN) console.log('[pAdd] start=' + __i0 + ' afterMul=' + this.i + ' peek=' + JSON.stringify(this.peek()));
+    while (this.at('punc', '+') || this.at('punc', '-')) {
+      const op = this.peek().value; this.i++;
+      const right = this.pMul();
+      left = c0(op === '+' ? 'add' : 'sub', left, right);
+    }
+    return left;
+  }
+  pMul() {
+    let left = this.pUnary();
+    while (this.at('punc', '*') || this.at('punc', '/')) {
+      const op = this.peek().value; this.i++;
+      const right = this.pUnary();
+      left = c0(op === '*' ? 'mul' : 'div', left, right);
+    }
+    return left;
+  }
+  pUnary() { return this.pPow(); }
+  pPow() {
+    // 幂右结合，且优先级高于一元负号：-x² = -(x²)
+    let base = this.pAtomTerm();
+    let sq = false;
+    while (true) {
+      if (this.at('punc', '²')) { this.i++; sq = true; continue; }
+      if (this.at('punc', '^')) {
+        this.i++;
+        const exp = this.pPow();
+        if (exp.k === 'n' && exp.n === 2) sq = true;
+        else base = c0('pow', base, exp);
+        continue;
+      }
+      break;
+    }
+    if (sq) base = c0('sq', base);
+    return base;
+  }
+  pAtomTerm() {
+    const t = this.peek();
+    if (globalThis.__DBG_PAREN) console.log('[atom] i=' + this.i + ' tok=' + JSON.stringify(t));
+    if (!t) throw new Error('项表达式意外结束');
+    if (t.type === 'num') { this.i++; return lit(Number(t.value)); }
+    if (t.type === 'punc' && t.value === '-') {   // 一元负号，作用于幂
+      this.i++;
+      return c0('neg', this.pPow());
+    }
+    if (t.type === 'punc' && t.value === '(') {
+      this.i++;
+      const inner = this.parseTerm();
+      if (globalThis.__DBG_PAREN) console.log('[paren] inner=' + JSON.stringify(inner).slice(0,60) + ' i=' + this.i + ' peek=' + JSON.stringify(this.peek()));
+      this.expect('punc', ')');
+      return inner;
+    }
+    if (t.type === 'punc' && t.value === '[') {
+      this.i++;
+      const els = [];
+      if (!this.at('punc', ']')) {
+        els.push(this.parseTerm());
+        while (this.accept('punc', ',')) els.push(this.parseTerm());
+      }
+      this.expect('punc', ']');
+      return c0('set', ...els);
+    }
+    if (t.type === 'punc' && t.value === '|') {
+      this.i++;
+      const inner = this.parseTerm();
+      this.expect('punc', '|');
+      return c0('abs', inner);
+    }
+    if (t.type === 'ident') {
+      this.i++;
+      const n = t.value;
+      if (this.at('punc', '(')) {
+        const args = this.parseArgs();
+        const f = this.sigLookup(n, 'funcs');
+        if (!f && !this.sigLookup(n, 'preds')) throw new Error('未知函数符号: ' + n);
+        if (f && f.arity !== undefined && f.arity !== args.length) throw new Error(n + ' 需要 ' + f.arity + ' 个参数，收到 ' + args.length);
+        return c0(n, ...args);
+      }
+      const bIdx = this.bound.lastIndexOf(n);
+      if (bIdx >= 0) return B(this.bound.length - 1 - bIdx);
+      return v(n, this.isVarName(n));
+    }
+    throw new Error('无法解析项: ' + JSON.stringify(t.value));
+  }
+  parseArgs() {
+    this.expect('punc', '(');
+    const args = [];
+    if (!this.at('punc', ')')) {
+      args.push(this.parseTerm());
+      while (this.accept('punc', ',')) args.push(this.parseTerm());
+    }
+    this.expect('punc', ')');
+    return args;
+  }
+
+  parseFormula() { return this.pIff(); }
+  pIff() {
+    const left = this.pImp();
+    if (this.at('punc', '↔') || this.at('punc', '<->') || this.at('ident', 'iff')) { this.i++; return iff(left, this.pIff()); }
+    return left;
+  }
+  pImp() {
+    const left = this.pOr();
+    if (this.at('punc', '→') || this.at('punc', '->') || this.at('punc', '=>') || this.at('ident', 'imp')) { this.i++; return imp(left, this.pImp()); }
+    return left;
+  }
+  pOr() {
+    let left = this.pAnd();
+    while (this.at('punc', '∨') || this.at('punc', '\\/') || this.at('ident', 'or')) { this.i++; left = or(left, this.pAnd()); }
+    return left;
+  }
+  pAnd() {
+    let left = this.pNot();
+    while (this.at('punc', '∧') || this.at('punc', '/\\') || this.at('ident', 'and')) { this.i++; left = and(left, this.pNot()); }
+    return left;
+  }
+  pNot() {
+    if (this.at('punc', '¬')) { this.i++; return not(this.pNot()); }
+    if (this.at('ident', 'not')) { this.i++; return not(this.pNot()); }
+    return this.pAtomFormula();
+  }
+  pCmp() {
+    let left = this.parseTerm();
+    const t = this.peek();
+    if (t && (t.type === 'punc')) {
+      const s = t.value;
+      if (s === '=') { this.i++; return eq(left, this.parseTerm()); }
+      if (s === '≠' || s === '!=') { this.i++; return not(eq(left, this.parseTerm())); }
+      if (s === '∈') { this.i++; return atom('mem', left, this.parseTerm()); }
+      if (s === '<' || s === '≤' || s === '>' || s === '≥' || s === '<=' || s === '>=') {
+        this.i++;
+        const right = this.parseTerm();
+        const map = { '<': 'lt', '≤': 'le', '>': 'gt', '≥': 'ge', '<=': 'le', '>=': 'ge' };
+        return atom(map[s], left, right);
+      }
+    }
+    while (this.at('punc', '²')) { this.i++; left = c0('sq', left); }
+    if (left.k === 'c' && this.sigLookup(left.name, 'preds')) return atom(left.name, ...left.args);
+    if (left.k === 'v' && left.free && (this.isAtomName(left.name) || this.lenient)) return atom(left.name);
+    throw new Error('无法解析为公式: ' + JSON.stringify(termStr(left)) + '（命题原子，请在记号表中登记）');
+  }
+  pAtomFormula() {
+    const t = this.peek();
+    if (!t) throw new Error('公式意外结束');
+    // 括号既可能是“(公式)”，也可能是“(项)”；先按公式试，失败则回退给项解析器
+    if (t.type === 'punc' && t.value === '(') {
+      const save = this.i;
+      this.i++;
+      try {
+        const inner = this.parseFormula();
+        this.expect('punc', ')');
+        return inner;
+      } catch (err) {
+        this.i = save;
+      }
+    }
+    if (t.type === 'punc' && t.value === '⊤') { this.i++; return TOP; }
+    if (t.type === 'punc' && t.value === '⊥') { this.i++; return BOT; }
+    if (t.type === 'ident' && (t.value === 'true')) { this.i++; return TOP; }
+    if (t.type === 'ident' && (t.value === 'false')) { this.i++; return BOT; }
+    if (t.type === 'ident' && (t.value === 'forall' || t.value === 'all')) { this.i++; return this.pQuant(true); }
+    if (t.type === 'ident' && (t.value === 'exists' || t.value === 'ex')) { this.i++; return this.pQuant(false); }
+    if (t.type === 'punc' && t.value === '∀') { this.i++; return this.pQuant(true); }
+    if (t.type === 'punc' && t.value === '∃') { this.i++; return this.pQuant(false); }
+    if (t.type === 'ident' && this.sigLookup(t.value, 'preds') && this.peek(1) && this.peek(1).value === '(') {
+      this.i++;
+      const args = this.parseArgs();
+      return atom(t.value, ...args);
+    }
+    return this.pCmp();
+  }
+  pQuant(isAll) {
+    const vars = [];
+    vars.push(this.name());
+    while (this.at('ident') && !KEYWORDS.has(this.peek().value)) vars.push(this.name());
+    // 分隔符：'.' / ':' / '->'；或逗号（此时逗号即分隔符，后接公式体）
+    const hadComma = this.accept('punc', ',');
+    const hadDot = this.accept('punc', '.') || this.accept('punc', ':') || this.accept('punc', '=>') || this.accept('punc', '->');
+    if (!hadComma && !hadDot) {
+      throw new Error('量词 ' + vars.join(' ') + ' 后期望 "." / ":" / "->" / ","');
+    }
+    for (const n of vars) this.bound.push(n);
+    let body = this.parseFormula();
+    for (let k = 0; k < vars.length; k++) this.bound.pop();
+
+    for (let k = vars.length - 1; k >= 0; k--) body = isAll ? all(vars[k], body) : ex(vars[k], body);
+    return body;
+  }
+}
+
+function parse(src, sig = makeSig(), opts = {}) {
+  const p = new Parser(src, sig, opts);
+  const f = p.parseFormula();
+  if (p.i !== p.toks.length) throw new Error('公式解析后仍有多余记号: ' + JSON.stringify(p.peek() && p.peek().value));
+  return f;
+}
+function parseTerm(src, sig = makeSig(), opts = {}) {
+  const p = new Parser(src, sig, opts);
+  const t = p.parseTerm();
+  if (p.i !== p.toks.length) throw new Error('项解析后仍有多余记号: ' + JSON.stringify(p.peek() && p.peek().value));
+  return t;
+}
+// 宽松解析：把任何裸自由变量当作命题原子（用于自动识别关卡里的原子名）
+function parseLenient(src, sig = makeSig(), opts = {}) {
+  return parse(src, sig, { ...opts, lenient: true });
+}
+
+function parseDecl(src, sig = makeSig(), opts = {}) {
+  const p = new Parser(src, sig, opts);
+  const t = p.parseTerm();
+  if (p.i === p.toks.length) {
+    if (t.k === 'c' && sig.preds && sig.preds[t.name]) return { kind: 'atom', value: atom(t.name, ...t.args) };
+    return { kind: 'term', value: t };
+  }
+  return { kind: 'formula', value: parse(src, sig, opts) };
+}
+
+Object.assign(m, {"v": v, "c0": c0, "lit": lit, "B": B, "EV": EV, "TOP": TOP, "BOT": BOT, "atom": atom, "eq": eq, "not": not, "and": and, "or": or, "imp": imp, "iff": iff, "all": all, "ex": ex, "freeVarsOfTerm": freeVarsOfTerm, "freeVars": freeVars, "isClosed": isClosed, "openAtTerm": openAtTerm, "openAt": openAt, "closeAtTerm": closeAtTerm, "closeAt": closeAt, "instAll": instAll, "genEx": genEx, "termEq": termEq, "alphaEq": alphaEq, "TERM_KINDS": TERM_KINDS, "PREC": PREC, "INFIX": INFIX, "REL": REL, "ctxName": ctxName, "wrap": wrap, "termStr": termStr, "topLevel": topLevel, "isLooser": isLooser, "isTighter": isTighter, "fstr": fstr, "pr": pr, "fLevel": fLevel, "P": P, "termKey": termKey, "fkey": fkey, "symbolsInTerm": symbolsInTerm, "symbolsIn": symbolsIn, "DEFAULT_SIG": DEFAULT_SIG, "makeSig": makeSig, "MULTI": MULTI, "SYMBOLS": SYMBOLS, "KEYWORDS": KEYWORDS, "lex": lex, "Parser": Parser, "parse": parse, "parseTerm": parseTerm, "parseLenient": parseLenient, "parseDecl": parseDecl});
+return m;
+})();
+reg["src/core/rules.js"] = (function () {
+  let m;
+m = {};
+// core/rules.js —— 自然演绎规则引擎：每一步推理都在这里校验
+const {TOP, BOT, atom, eq, not, and, or, imp, iff, all, ex, alphaEq, termEq, instAll, openAt, v, c0, lit, symbolsIn, symbolsInTerm, fstr, termStr} = reg["src/core/logic.js"];
+
+const isBot = (f) => f.k === 'bot';
+const allFacts = (s) => s.facts;
+
+/* ---------- 子公式拆分 / 组合 ---------- */
+function decompose(f) {
+  if (f.k === 'and' || f.k === 'or' || f.k === 'imp' || f.k === 'iff') return [f.a, f.b];
+  if (f.k === 'not') return [f.a];
+  if (f.k === 'all' || f.k === 'ex') return [f.body];
+  return [];
+}
+// 注意：量词下方是绑定变量，等于替换必须整段跳过（不能靠 termEq 判断）
+function rebuild(kind, parts, orig) {
+  switch (kind) {
+    case 'and': return and(parts[0], parts[1]);
+    case 'or': return or(parts[0], parts[1]);
+    case 'imp': return imp(parts[0], parts[1]);
+    case 'iff': return iff(parts[0], parts[1]);
+    case 'not': return not(parts[0]);
+    case 'all': return all(orig.name, parts[0]);
+    case 'ex': return ex(orig.name, parts[0]);
+    default: return null;
+  }
+}
+
+/* ---------- 等词替换：找出所有 a→b 重写后的公式 ---------- */
+// vars：允许出现在替换结果中的自由变量名（作用域安全，避免量词捕获）
+function rewriteOptions(f, a, b, vars, side) {
+  const out = [];
+  const push = (w) => { if (w && !out.some((x) => alphaEq(x, w))) out.push(w); };
+  // 情形一：f 本身是等式，其中出现 a（side 可限定只换左端或右端）
+  if (f.k === 'eq') {
+    const xs = side === '右' ? [f.a] : altsOrKeep(rewriteTermDeep(f.a, a, b, vars), f.a);
+    const ys = side === '左' ? [f.b] : altsOrKeep(rewriteTermDeep(f.b, a, b, vars), f.b);
+    for (const x of xs) for (const y of ys) {
+      const w = eq(x, y);
+      if (!alphaEq(w, f)) push(w);   // 与原文一模一样的“替换”不算一步
+    }
+  } else {
+    for (const w of rewriteTermOptions(f, a, b, vars)) push(w);
+  }
+  // 情形二：在子公式中替换
+  const kind = f.k;
+  if (kind === 'all' || kind === 'ex') return out;   // 绑定变量：不进入内部替换
+  const parts = decompose(f);
+  for (let i = 0; i < parts.length; i++) {
+    const after = rewriteOptions(parts[i], a, b, vars);
+    for (const alt of after) {
+      const copy = parts.slice();
+      copy[i] = alt;
+      push(rebuild(kind, copy, f));
+    }
+  }
+  return out;
+}
+function safeVarsOf(t, allowed) {
+  if (!allowed) return true;
+  const s = symbolsInTerm(t, { vars: new Set(), funcs: new Set() });
+  for (const n of s.vars) if (!allowed.has(n)) return false;
+  return true;
+}
+function rewriteTermOptions(f, a, b, vars) {
+  const out = [];
+  switch (f.k) {
+    case 'atom': {
+      const args = f.args.map((t) => altsOrKeep(rewriteTermDeep(t, a, b, vars), t));
+      for (const variant of cartesian(args)) out.push(atom(f.name, ...variant));
+      break;
+    }
+    case 'eq': {
+      const xs = altsOrKeep(rewriteTermDeep(f.a, a, b, vars), f.a);
+      const ys = altsOrKeep(rewriteTermDeep(f.b, a, b, vars), f.b);
+      for (const x of xs) for (const y of ys) out.push(eq(x, y));
+      break;
+    }
+    default: break;
+  }
+  return out;
+}
+function rewriteTermDeep(t, a, b, vars) {
+  const out = [];
+  if (termEq(t, a) && safeVarsOf(b, vars)) out.push(b);
+  if (t.k === 'c') {
+    const args = t.args.map((x) => altsOrKeep(rewriteTermDeep(x, a, b, vars), x));
+    for (const variant of cartesian(args)) out.push(c0(t.name, ...variant));
+  }
+  return out;
+}
+// 某个子项没有可替换之处时，保留原样（否则组合会全部消失）
+function altsOrKeep(alts, original) { return alts.length ? alts : [original]; }
+function cartesian(lists) {
+  let acc = [[]];
+  for (const l of lists) {
+    const next = [];
+    for (const prefix of acc) for (const item of l) next.push(prefix.concat([item]));
+    acc = next;
+  }
+  return acc;
+}
+
+
+/* ---------- 多项式正规化：良基的“环化简”，其合法性由域公理保证 ---------- */
+// 有理数
+function gcdInt(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+function frac(n, d) {
+  if (d === 0) throw new Error('除以零');
+  if (d < 0) { n = -n; d = -d; }
+  const g = gcdInt(n, d);
+  return { n: n / g, d: d / g };
+}
+const fAdd = (a, b) => frac(a.n * b.d + b.n * a.d, a.d * b.d);
+const fMul = (a, b) => frac(a.n * b.n, a.d * b.d);
+const fNeg = (a) => ({ n: -a.n, d: a.d });
+const fZero = { n: 0, d: 1 };
+const fOne = { n: 1, d: 1 };
+
+// 多项式：Map<monomialKey, frac>，monomialKey 形如 "*x^2*y"
+const MONO_ONE = '';
+function monoKey(pairs) {
+  return pairs.filter(([, e]) => e !== 0).sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([v, e]) => (e === 1 ? v : v + '^' + e)).join('*');
+}
+// 合并两个“单项式键”（每个键是若干变量幂的乘积），而不是把键当成单个变量
+function monoMul(a, b) {
+  const count = new Map();
+  for (const part of [a, b]) {
+    if (!part) continue;                       // 空串 = 常数 1
+    for (const seg of part.split('*')) {
+      const [v, e] = seg.split('^');
+      count.set(v, (count.get(v) || 0) + (e === undefined ? 1 : Number(e)));
+    }
+  }
+  return monoKey([...count.entries()]);
+}
+function polyZero() { return new Map(); }
+function polyConst(f) { const m = new Map(); if (f.n !== 0) m.set(MONO_ONE, f); return m; }
+function polyVar(name) { const m = new Map(); m.set(monoKey([[name, 1]]), fOne); return m; }
+function polyAdd(a, b) {
+  const out = new Map(a);
+  for (const [k, v] of b) {
+    const cur = out.get(k) || fZero;
+    const sum = fAdd(cur, v);
+    if (sum.n === 0) out.delete(k); else out.set(k, sum);
+  }
+  return out;
+}
+function polyNeg(a) { const out = new Map(); for (const [k, v] of a) { const w = fNeg(v); if (w.n) out.set(k, w); } return out; }
+function polySub(a, b) { return polyAdd(a, polyNeg(b)); }
+function polyMul(a, b) {
+  const out = new Map();
+  for (const [ka, va] of a) for (const [kb, vb] of b) {
+    const k = monoMul(ka, kb);
+    const tr = fAdd(out.get(k) || fZero, fMul(va, vb));   // 同名项系数必须累加
+    if (tr.n === 0) out.delete(k); else out.set(k, tr);
+  }
+  return out;
+}
+function polyPow(a, n) {
+  let base = a, out = polyConst(fOne), e = n;
+  while (e > 0) {
+    if (e & 1) out = polyMul(out, base);
+    base = polyMul(base, base);
+    e >>= 1;
+  }
+  return out;
+}
+
+// 把项转成多项式；不支持的构造返回 null
+function polyOfTerm(t) {
+  switch (t.k) {
+    case 'n': return polyConst(frac(t.n, 1));
+    case 'v': return polyVar(t.name);
+    case 'b': return polyVar('#' + t.i);
+    case 'e': return polyVar('?' + t.name);
+    case 'c': {
+      const { name, args } = t;
+      const ps = args.map(polyOfTerm);
+      if (ps.some((p) => p === null)) return null;
+      switch (name) {
+        case 'add': return polyAdd(ps[0], ps[1]);
+        case 'sub': return polySub(ps[0], ps[1]);
+        case 'mul': return polyMul(ps[0], ps[1]);
+        case 'neg': return polyNeg(ps[0]);
+        case 'sq': return polyMul(ps[0], ps[0]);
+        case 'pow': {
+          const e = args[1];
+          if (e.k !== 'n' || e.n < 0 || e.n > 32) return null;
+          return polyPow(ps[0], e.n);
+        }
+        default: return null;   // div / abs / set ...
+      }
+    }
+    default: return null;
+  }
+}
+function polyStr(p) {
+  if (p.size === 0) return '0';
+  const terms = [...p.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([k, v]) => {
+    const coef = v.d === 1 ? String(v.n) : v.n + '/' + v.d;
+    if (k === MONO_ONE) return coef;
+    return (v.n === 1 && v.d === 1) ? k : coef + '*' + k;
+  });
+  return terms.join(' + ');
+}
+// 多项式 → 项：用于把等式两边化为同一个规范形式
+function polyToTerm(p) {
+  if (p.size === 0) return lit(0);
+  // 按次数从高到低排列（课本写法：x² + 2x + 1），同次按单项式键
+  const entries = [...p.entries()].sort((a, b) => {
+    const da = monoDegree(a[0]), db = monoDegree(b[0]);
+    if (da !== db) return db - da;
+    return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
+  });
+  const terms = entries.map(([k, f]) => monoToTerm(k, f));
+  let acc = terms[0];
+  for (let i = 1; i < terms.length; i++) {
+    const f = entries[i][1];
+    // 负系数写成减法，更接近课本写法（x² - y² 而不是 x² + -1 * y²）
+    acc = negativeTerm(f) ? c0('sub', acc, terms[i]) : c0('add', acc, terms[i]);
+  }
+  return acc;
+}
+function negativeTerm(f) { return f.n < 0; }
+function monoDegree(key) {
+  if (key === '') return 0;
+  let d = 0;
+  for (const seg of key.split('*')) {
+    const parts = seg.split('^');
+    d += parts.length > 1 ? Number(parts[1]) : 1;
+  }
+  return d;
+}
+function monoToTerm(key, f) {
+  const g = absFrac(f);
+  let t = fracToTerm(g);
+  if (key === '') return t;
+  for (const seg of key.split('*')) {
+    const parts = seg.split('^');
+    const vname = parts[0];
+    const exp = parts.length > 1 ? Number(parts[1]) : 1;
+    let base = vname.charAt(0) === '#' ? { k: 'b', i: Number(vname.slice(1)) } : v(vname, false);
+    if (exp === 2) base = c0('sq', base);
+    else if (exp > 2) base = c0('pow', base, lit(exp));
+    t = (t.k === 'n' && t.n === 1) ? base : c0('mul', t, base);
+  }
+  return t;
+}
+function fracToTerm(f) {
+  if (f.d === 1) return lit(f.n);
+  return c0('div', lit(f.n), lit(f.d));
+}
+function absFrac(f) { return { n: Math.abs(f.n), d: f.d }; }
+
+function ringEqual(a, b) {
+  const pa = polyOfTerm(a), pb = polyOfTerm(b);
+  if (!pa || !pb) return null;
+  if (pa.size !== pb.size) return false;
+  for (const [k, v] of pa) {
+    const w = pb.get(k);
+    if (!w || w.n !== v.n || w.d !== v.d) return false;
+  }
+  return true;
+}
+// 规则使用的判定 + 记录用到的公理
+function ringJustification(pa, pb) {
+  const used = [];
+  const need = (name) => { if (used.indexOf(name) < 0) used.push(name); };
+  const walk = (t) => {
+    if (t.k !== 'c') return;
+    if (t.name === 'add' || t.name === 'sub') need('加法交换/结合');
+    if (t.name === 'mul') need('乘法交换/结合/分配');
+    if (t.name === 'neg') need('加法逆元');
+    if (t.name === 'sq' || t.name === 'pow') need('幂的定义');
+    if (t.name === 'n') need('数域运算');
+    t.args.forEach(walk);
+  };
+  walk(pa); walk(pb);
+  return used;
+}
+
+/* ---------- 规则表 ---------- */
+// 每条规则：name（显示名）、hint（说明）、arity（前提个数，null=不定）、needTerm、needFormula
+const RULES = {
+  hyp:       { name: '引用前提',     hint: '直接引用一个已知事实（公理、题设、已证结论）', arity: 1 },
+  andI:      { name: '合取引入 ∧I',  hint: '由 A 与 B 得到 A ∧ B', arity: 2 },
+  andE:      { name: '合取消去 ∧E',  hint: '由 A ∧ B 得到 A 或 B', arity: 1, picks: ['左', '右'] },
+  orI:       { name: '析取引入 ∨I',  hint: '由 A 得到 A ∨ B（B 可任取）', arity: 1, needFormula: true },
+  orE:       { name: '析取消去 ∨E',  hint: 'A ∨ B，A → C，B → C ⟹ C', arity: 3 },
+  impE:      { name: '蕴含消去 →E',  hint: 'A → B 与 A ⟹ B（假言推理）', arity: 2 },
+  impI:      { name: '蕴含引入 →I',  hint: '假设 A 推出 B，则得 A → B（先点“假设”）', arity: 1, needScope: true },
+  negE:      { name: '否定消去 ¬E',  hint: 'A 与 ¬A ⟹ ⊥', arity: 2 },
+  negI:      { name: '否定引入 ¬I',  hint: '假设 A 推出 ⊥，则得 ¬A（先点“假设”）', arity: 1, needScope: true },
+  raa:       { name: '反证法 ⊥C',    hint: '假设 ¬A 推出 ⊥，则得 A', arity: 1, needScope: true },
+  allE:      { name: '全称消去 ∀E',  hint: '∀x, P(x) ⟹ P(t)，把一个普遍公理用到具体对象上', arity: 1, needTerm: true },
+  exI:       { name: '存在引入 ∃I',  hint: 'P(t) ⟹ ∃x, P(x)', arity: 1, needTerm: true },
+  eqRefl:    { name: '自反 =I',      hint: 't = t', arity: 0, needTerm: true },
+  eqSym:     { name: '对称 =Sym',    hint: 'a = b ⟹ b = a', arity: 1 },
+  eqTrans:   { name: '传递 =Trans',  hint: 'a = b，b = c ⟹ a = c', arity: 2 },
+  eqRewrite: { name: '等量代换 =Sub', hint: 'a = b 与 P(a) ⟹ P(b)', arity: 2 },
+  iffI:      { name: '等价引入 ↔I',  hint: 'A → B 与 B → A ⟹ A ↔ B', arity: 2 },
+  iffE:      { name: '等价消去 ↔E',  hint: 'A ↔ B ⟹ A → B 或 B → A', arity: 1, picks: ['→', '←'] },
+  ring:      { name: '代数化简 Ring',  hint: '由域公理推出的等式化简：两边化成同一个多项式即成立', arity: 1 },
+  arith:     { name: '数值计算',      hint: '两边都是具体数字时直接算出相等/不等关系', arity: 1 },
+  eqOp:      { name: '两边同时运算',  hint: '等式两边同加/同减/同乘/同除/同取负/同平方', arity: 1, needOp: true },
+  eqOpTerm:  { name: '两边同加/乘一个式子', hint: '两边同加或同乘同一个项（不只是数字），解方程常用', arity: 1, needOp: true },
+  excludedMiddle: { name: '排中律', hint: 'A ∨ ¬A 恒成立，可用于分情况讨论', arity: 0 },
+};
+const RULE_ORDER = ['hyp', 'impE', 'impI', 'andI', 'andE', 'orI', 'orE', 'negE', 'negI', 'raa', 'excludedMiddle', 'allE', 'exI', 'eqRefl', 'eqSym', 'eqTrans', 'eqRewrite', 'eqOp', 'iffI', 'iffE', 'ring', 'arith'];
+
+/* 具体数字求值（仅纯数字表达式，健全） */
+function evalConcrete(t) {
+  const r = (x) => {
+    if (x.k === 'n') return x.n;
+    if (x.k !== 'c') return null;
+    const a = x.args.map(r);
+    if (a.some((y) => y === null)) return null;
+    switch (x.name) {
+      case 'add': return a[0] + a[1];
+      case 'sub': return a[0] - a[1];
+      case 'mul': return a[0] * a[1];
+      case 'div': return a[1] === 0 ? null : a[0] / a[1];
+      case 'neg': return -a[0];
+      case 'sq': return a[0] * a[0];
+      case 'pow': return Math.pow(a[0], a[1]);
+      case 'abs': return Math.abs(a[0]);
+      default: return null;
+    }
+  };
+  return r(t);
+}
+
+/* 具体数字化简：能算的部分算出来（仍保留符号部分），例如 x + 1 - 1 → x、5 - 1 → 4 */
+function evalReduce(t) {
+  const r = (x) => {
+    if (x.k === 'n') return lit(x.n);
+    if (x.k !== 'c') return x;
+    const args = x.args.map(r);
+    const v = evalConcrete({ k: 'c', name: x.name, args });
+    if (v !== null && Number.isInteger(v) && Math.abs(v) <= 1e9) return lit(v);
+    switch (x.name) {
+      case 'add':
+        if (args[1].k === 'n' && args[1].n === 0) return args[0];
+        if (args[0].k === 'n' && args[0].n === 0) return args[1];
+        break;
+      case 'sub': {
+        if (args[1].k === 'n' && args[1].n === 0) return args[0];
+        // 线性抵消：(t + c) - c → t，(c + t) - c → t，(t - c) + c → t
+        const t = flattenAdd(args[0]);
+        const hit = t.findIndex((x) => termEq(x, args[1]));
+        if (hit >= 0) {
+          const rest = t.filter((_, i) => i !== hit);
+          if (rest.length === 0) return lit(0);
+          return rest.reduce((a, b) => c0('add', a, b));
+        }
+        break;
+      }
+      case 'add': {
+        // (t + c) + (-c) → t
+        if (args[1].k === 'c' && args[1].name === 'neg') {
+          const t = flattenAdd(args[0]);
+          const hit = t.findIndex((x) => termEq(x, args[1].args[0]));
+          if (hit >= 0) {
+            const rest = t.filter((_, i) => i !== hit);
+            if (rest.length === 0) return lit(0);
+            return rest.reduce((a, b) => c0('add', a, b));
+          }
+        }
+        break;
+      }
+      case 'mul':
+        if (args[1].k === 'n' && args[1].n === 1) return args[0];
+        if (args[0].k === 'n' && args[0].n === 1) return args[1];
+        if ((args[1].k === 'n' && args[1].n === 0) || (args[0].k === 'n' && args[0].n === 0)) return lit(0);
+        break;
+      case 'div': {
+        if (args[1].k === 'n' && args[1].n === 1) return args[0];
+        if (args[1].k === 'n') {
+          const n = args[1].n;
+          // 先把分子里的常数因子提出来约分：(c*t)/c → t，(c*t)/d → (c/d)*t
+          const split = splitCoefficient(args[0]);
+          if (split && split.c % n === 0) {
+            const q = split.c / n;
+            return q === 1 ? split.t : c0('mul', lit(q), split.t);
+          }
+          if (split && n % split.c === 0) {
+            // (c*t)/d → t * (c/d)，保留分数系数避免引入除法
+            const num = split.c, den = n;
+            const g = gcdInt(num, den);
+            const p = num / g, q2 = den / g;
+            const frac = c0('div', lit(p), lit(q2));
+            return c0('mul', frac, split.t);
+          }
+          const f = factorOut(args[0], n);
+          if (f !== null) return f;
+          if (args[0].k === 'n' && args[0].n % n === 0) return lit(args[0].n / n);
+        }
+        break;
+      }
+      case 'neg': if (args[0].k === 'n') return lit(-args[0].n); break;
+      default: break;
+    }
+    return c0(x.name, ...args);
+  };
+  return r(t);
+}
+
+// 提取“常数系数 × 其余部分”：3*x → {c:3, t:x}，x → {c:1, t:x}，2*(x+1) → {c:2, t:x+1}
+function splitCoefficient(t) {
+  if (t.k === 'n') return { c: t.n, t: lit(1) };
+  if (t.k !== 'c') return { c: 1, t };
+  if (t.name === 'mul') {
+    for (const [a, b] of [[t.args[0], t.args[1]], [t.args[1], t.args[0]]]) {
+      if (a.k === 'n') return { c: a.n, t: b };
+    }
+  }
+  if (t.name === 'neg') {
+    const inner = splitCoefficient(t.args[0]);
+    return { c: -inner.c, t: inner.t };
+  }
+  if (t.name === 'div' && t.args[1].k === 'n' && t.args[0].k === 'n') {
+    return { c: t.args[0].n / t.args[1].n, t: lit(1) };
+  }
+  return { c: 1, t };
+}
+
+// 把 add 链摊平成因子列表
+function flattenAdd(t) {
+  if (t.k === 'c' && t.name === 'add') return flattenAdd(t.args[0]).concat(flattenAdd(t.args[1]));
+  return [t];
+}
+// 若能提出因子 n，返回 (t / n)；否则返回 null
+function factorOut(t, n) {
+  if (t.k === 'c' && t.name === 'mul') {
+    for (const [a, b] of [[t.args[0], t.args[1]], [t.args[1], t.args[0]]]) {
+      if (a.k === 'n' && a.n % n === 0) {
+        const q = a.n / n;
+        return q === 1 ? b : c0('mul', lit(q), b);
+      }
+    }
+  }
+  return null;
+}
+
+/* 对等式两边施加同一运算：f(a) = f(b)。运算必须是可判定的具体函数或“化简”。 */
+const EQUATION_OPS = {
+  add: (t, n) => evalReduce(c0('add', t, lit(n))),
+  sub: (t, n) => evalReduce(c0('sub', t, lit(n))),
+  mul: (t, n) => evalReduce(c0('mul', t, lit(n))),
+  div: (t, n) => evalReduce(c0('div', t, lit(n))),
+  neg: (t) => evalReduce(c0('neg', t)),
+  sq: (t) => c0('sq', t),
+};
+
+class RuleError extends Error {}
+
+/* ---------- 主检查入口 ----------
+ * state: { facts: Fact[], scope: string|null, nextId: number, freshCount: number }
+ * Fact:  { id, f, rule, from: string[], terms?: Term[], scope: string|null, name?: string }
+ * req:   { rule, ids: string[], term?: Term, formula?: Formula, pick?: '左'|'右'|'→'|'←' }
+ */
+function runRule(state, req) {
+  const spec = RULES[req.rule];
+  if (!spec) throw new RuleError('未知规则: ' + req.rule);
+  const byId = new Map(state.facts.map((f) => [f.id, f]));
+  const premises = (req.ids || []).map((id) => {
+    const f = byId.get(id);
+    if (!f) throw new RuleError('找不到前提 ' + id);
+    return f;
+  });
+  if (spec.arity !== null && premises.length !== spec.arity) {
+    throw new RuleError(spec.name + ' 需要 ' + spec.arity + ' 个前提，当前选了 ' + premises.length + ' 个');
+  }
+  const P = premises.map((x) => x.f);
+  const scopeOf = (list) => {
+    const s = new Set();
+    for (const f of list) {
+      if (!f.scope) continue;
+      for (const x of String(f.scope).split('|')) if (x) s.add(x);
+    }
+    return s;
+  };
+  // 作用域是否闭合：所用假设都必须仍在当前打开的子证明里
+  const scopeClosed = (s) => [...s].every((id) => state.scopeStack.indexOf(id) >= 0);
+  const out = (f, extra = {}) => {
+    const sc = extra.scope !== undefined ? extra.scope : mergeScope(premises);
+    return { f, rule: req.rule, terms: extra.terms || [], scope: sc, pick: extra.pick };
+  };
+  const mergeScope = (list) => {
+    const s = scopeOf(list);
+    return s.size ? [...s].sort().join('|') : null;
+  };
+
+  switch (req.rule) {
+    case 'hyp': return out(P[0]);
+    case 'andI':
+      if (P[0].k !== 'and' && P[1].k !== 'and') return out(and(P[0], P[1]));
+      throw new RuleError('∧I 的前提不应已经是合取式');
+    case 'andE': {
+      if (P[0].k !== 'and') throw new RuleError('∧E 需要一个合取式前提 A ∧ B');
+      const pick = req.pick === '右' ? 1 : req.pick === '左' ? 0 : null;
+      if (pick === null) throw new RuleError('∧E 需要选择取左边还是右边');
+      return out(pick === 0 ? P[0].a : P[0].b, { pick: req.pick });
+    }
+    case 'orI': {
+      if (!req.formula) throw new RuleError('∨I 需要给出要或上的另一支');
+      const target = req.formula;
+      if (target.k !== 'or') throw new RuleError('∨I 的结果必须是 A ∨ B 形式');
+      if (alphaEq(target.a, P[0]) || alphaEq(target.b, P[0])) return out(target);
+      throw new RuleError('∨I：' + fstr(P[0]) + ' 不是 ' + fstr(target) + ' 的析取支');
+    }
+    case 'orE': {
+      const [d, i1, i2] = P;
+      if (d.k !== 'or') throw new RuleError('∨E 的第一个前提应是 A ∨ B');
+      const branches = [[i1, d.a], [i2, d.b]];
+      for (const [im, want] of branches) {
+        if (im.k !== 'imp' || !alphaEq(im.a, want)) {
+          throw new RuleError('∨E 需要两支蕴含：' + fstr(want) + ' → C，当前给出 ' + fstr(im));
+        }
+      }
+      if (!alphaEq(i1.b, i2.b)) throw new RuleError('∨E 两支的结论必须相同');
+      return out(i1.b);
+    }
+    case 'impE': {
+      const i = P.find((x) => x.k === 'imp');
+      if (!i) throw new RuleError('→E 需要一个蕴含式前提 A → B');
+      const other = P[0] === i ? P[1] : P[0];
+      if (!alphaEq(i.a, other)) throw new RuleError('→E 不匹配：需要 ' + fstr(i.a) + '，手上有 ' + fstr(other));
+      return out(i.b);
+    }
+    case 'impI': case 'negI': case 'raa': {
+      if (P.length !== 1) throw new RuleError('该规则需要恰好一个已推导出的事实');
+      const s = scopeOf(premises);
+      if (s.size === 0) throw new RuleError('这条规则必须在一个假设（子证明）内使用：请先在“假设”面板打开子证明');
+      if (!scopeClosed(s)) throw new RuleError('所依赖的假设已经合上，不能再用了');
+      const scopeId = state.scopeStack[state.scopeStack.length - 1];   // 合上最内层子证明
+      let assumed = state.assumptions && state.assumptions[scopeId];
+      if (!assumed) {
+        const hf = state.facts.find((f) => f.scope === scopeId && f.rule === 'assume');
+        assumed = hf && hf.f;
+      }
+      if (!assumed) throw new RuleError('找不到假设 ' + scopeId);
+      if (state.assumptions) delete state.assumptions[scopeId];   // 合上：该假设立即失效
+      if (state.closedScopes && state.closedScopes.indexOf(scopeId) < 0) state.closedScopes.push(scopeId);
+      if (req.rule === 'impI') return out(imp(assumed, P[0]), { scope: restScope(state, scopeId) });
+      if (req.rule === 'negI') {
+        if (!isBot(P[0])) throw new RuleError('¬I 需要推出矛盾 ⊥，当前是 ' + fstr(P[0]));
+        if (assumed.k === 'not') throw new RuleError('¬I 的假设应是肯定式 A；想从 ¬A 推出 ⊥ 请用“反证法”');
+        return out(not(assumed), { scope: restScope(state, scopeId) });
+      }
+      if (req.rule === 'raa') {
+        if (!isBot(P[0])) throw new RuleError('反证法需要推出矛盾 ⊥，当前是 ' + fstr(P[0]));
+        if (assumed.k !== 'not') throw new RuleError('反证法的假设应为 ¬A 形式，当前假设是 ' + fstr(assumed));
+        return out(assumed.a, { scope: restScope(state, scopeId) });
+      }
+      throw new RuleError('内部错误');
+    }
+    case 'negE': {
+      const n = P.find((x) => x.k === 'not');
+      if (!n) throw new RuleError('¬E 需要一个否定式前提 ¬A');
+      const other = P[0] === n ? P[1] : P[0];
+      if (!alphaEq(n.a, other)) throw new RuleError('¬E 不匹配：¬' + fstr(n.a) + ' 与 ' + fstr(other));
+      return out(BOT);
+    }
+    case 'allE': {
+      if (P[0].k !== 'all') throw new RuleError('∀E 需要一个全称前提 ∀x, P');
+      const t = req.term || v(state.freshName ? state.freshName() : 'c' + (++state.freshCount), true);
+      return out(instAll(P[0], t), { terms: [t] });
+    }
+    case 'exI': {
+      const t = req.term;
+      if (!t) throw new RuleError('∃I 需要指明见证项 t');
+      if (!(t.k === 'v' && t.free) && t.k !== 'n' && t.k !== 'c') throw new RuleError('∃I 的见证项应是变量或常量');
+      const name = state.exName || (t.k === 'v' ? t.name : 'x');
+      return out(ex(name, closeForEx(P[0], t, name)), { terms: [t] });
+    }
+    case 'eqRefl': {
+      const t = req.term;
+      if (!t) throw new RuleError('=I 需要指明项 t，得到 t = t');
+      return out(eq(t, t), { terms: [t] });
+    }
+    case 'assertion': {
+      // 内部使用：把玩家给出的具体数值命题登记为一条已证事实
+      if (!req.formula) throw new RuleError('缺少要登记的命题');
+      return out(req.formula);
+    }
+    case 'eqSym': {
+      if (P[0].k !== 'eq') throw new RuleError('=Sym 需要一个等式前提');
+      return out(eq(P[0].b, P[0].a));
+    }
+    case 'eqTrans': {
+      const [e1, e2] = P;
+      if (e1.k !== 'eq' || e2.k !== 'eq') throw new RuleError('=Trans 需要两个等式前提');
+      if (termEq(e1.b, e2.a)) return out(eq(e1.a, e2.b));
+      if (termEq(e2.b, e1.a)) return out(eq(e2.a, e1.b));
+      throw new RuleError('=Trans 中间项不匹配：' + fstr(e1) + ' 与 ' + fstr(e2));
+    }
+    case 'eqRewrite': {
+      const e = P.find((x) => x.k === 'eq');
+      if (!e) throw new RuleError('=Sub 需要一个等式前提 a = b');
+      const target = P[0] === e ? P[1] : P[0];
+      const safe = new Set();
+      for (const fact of state.facts) {
+        const sym = symbolsIn(fact.f);
+        for (const n of sym.vars) safe.add(n);
+      }
+      // pick = '左'/'右'：只在指定的一侧找替换；该方向无解时自动改用反向等式（a=b 与 b=a 等价）
+      const side = req.pick === '左' || req.pick === '右' ? req.pick : undefined;
+      const collect = (from, to) => {
+        const raw = rewriteOptions(target, from, to, safe, side);
+        const uniq = [];
+        for (const w of raw) if (!uniq.some((x) => alphaEq(x, w))) uniq.push(w);
+        return uniq;
+      };
+      let opts = collect(e.a, e.b);
+      if (opts.length === 0) opts = collect(e.b, e.a);
+      if (opts.length === 0) throw new RuleError('=Sub 在该公式中找不到可替换的出现');
+      // 指定了结果式就按结果式挑选；否则只在唯一结果时自动完成
+      let chosen = req.formula ? opts.find((x) => alphaEq(x, req.formula)) : null;
+      if (!chosen && !req.formula) {
+        if (opts.length === 1) chosen = opts[0];
+        else throw new RuleError('=Sub 有 ' + opts.length + ' 种替换结果，请选择要用的结果式：' + opts.map((o) => fstr(o)).join(' / '));
+      }
+      if (!chosen) throw new RuleError('=Sub 的替换结果与指定公式不一致');
+      return out(chosen, { terms: [e.a, e.b] });
+    }
+    case 'iffI': {
+      const [i1, i2] = P;
+      if (i1.k !== 'imp' || i2.k !== 'imp') throw new RuleError('↔I 需要两个蕴含式');
+      if (!alphaEq(i1.a, i2.b) || !alphaEq(i1.b, i2.a)) throw new RuleError('↔I 两个蕴含方向必须互反');
+      return out(iff(i1.a, i1.b));
+    }
+    case 'iffE': {
+      if (P[0].k !== 'iff') throw new RuleError('↔E 需要一个等价式前提 A ↔ B');
+      const dir = req.pick === '←' ? 1 : 0;
+      return out(dir === 0 ? imp(P[0].a, P[0].b) : imp(P[0].b, P[0].a), { pick: req.pick });
+    }
+    case 'excludedMiddle': {
+      const f = req.formula;
+      if (!f || f.k !== 'or') throw new RuleError('排中律的形式是 A ∨ ¬A');
+      const negSide = f.a.k === 'not' ? f.a : (f.b.k === 'not' ? f.b : null);
+      if (!negSide) throw new RuleError('排中律要求其中一边是否定：A ∨ ¬A');
+      const plain = negSide === f.a ? f.b : f.a;
+      // 注意：这里比的是公式（命题），必须用 alphaEq；termEq 只适用于项
+      if (!alphaEq(negSide.a, plain)) throw new RuleError('排中律要求两边是同一个命题的正反：A ∨ ¬A');
+      return out(f);
+    }
+    case 'eqOpTerm': {
+      if (P[0].k !== 'eq') throw new RuleError('“两边同加/乘一个式子”需要一个等式前提');
+      const op = req.op && req.op.name;
+      const t = req.op && req.op.term;
+      if (!t) throw new RuleError('缺少要与两边同时运算的项');
+      if (op === 'add') return out(eq(c0('add', P[0].a, t), c0('add', P[0].b, t)), { terms: [t] });
+      if (op === 'mul') return out(eq(c0('mul', P[0].a, t), c0('mul', P[0].b, t)), { terms: [t] });
+      throw new RuleError('“两边同加/乘一个式子”只支持 加 / 乘');
+    }
+    case 'eqOp': {
+      if (P[0].k !== 'eq') throw new RuleError('“两边同时运算”需要一个等式前提');
+      const opName = req.op && req.op.name;
+      const op = EQUATION_OPS[opName];
+      if (!op) throw new RuleError('未知的运算: ' + opName + '（支持 加/减/乘/除/取负/平方）');
+      if (opName === 'div' && (!Number.isFinite(req.op.n) || req.op.n === 0)) throw new RuleError('不能两边同除以 0');
+      const a = op(P[0].a, req.op.n);
+      const b = op(P[0].b, req.op.n);
+      return out(eq(a, b), { terms: [lit(req.op.n)] , op: req.op });
+    }
+    case 'arith': {
+      const rel = P[0];
+      if (rel.k === 'eq') {
+        const a = evalConcrete(rel.a), b = evalConcrete(rel.b);
+        if (a === null || b === null) throw new RuleError('数值计算：两边必须都是具体数字（可含 + - * / |·| 乘方）');
+        if (a !== b) throw new RuleError('数值计算：' + a + ' ≠ ' + b);
+        // keepLeft：保留左边原式、右边给具体值（用于“把子式换成它的值”当桥梁）
+        // 注意要在“两边相同就返回”之前判断，否则 -(-3) = -(-3) 这种会被原样返回
+        if (req.keepLeft) return out(eq(rel.a, lit(b)));
+        if (termEq(rel.a, rel.b)) return out(rel);
+        if (rel.a.k === 'n' && rel.b.k === 'n') return out(rel);
+        return out(eq(lit(a), lit(b)));
+      }
+      if (rel.k === 'atom' && ['lt', 'le', 'gt', 'ge'].indexOf(rel.name) >= 0) {
+        const a = evalConcrete(rel.args[0]), b = evalConcrete(rel.args[1]);
+        if (a === null || b === null) throw new RuleError('数值计算：两边必须都是具体数字');
+        const ok = rel.name === 'lt' ? a < b : rel.name === 'le' ? a <= b : rel.name === 'gt' ? a > b : a >= b;
+        if (!ok) throw new RuleError('数值计算：' + a + ' 与 ' + b + ' 不满足 ' + REL[rel.name]);
+        return out(rel);
+      }
+      if (rel.k === 'not' && rel.a.k === 'eq') {
+        const a = evalConcrete(rel.a.a), b = evalConcrete(rel.a.b);
+        if (a === null || b === null) throw new RuleError('数值计算：两边必须都是具体数字');
+        if (a === b) throw new RuleError('数值计算：' + a + ' = ' + b + '，不能断言不等');
+        return out(rel);
+      }
+      throw new RuleError('数值计算只能用于等式或不等式的具体数值验证');
+    }
+    case 'ring': {
+      if (P[0].k !== 'eq') throw new RuleError('代数化简需要一个等式前提');
+      const pa = polyOfTerm(P[0].a), pb = polyOfTerm(P[0].b);
+      if (pa && pb) {
+        // 两边都能化成多项式：若同为一个多项式，则输出“两边都化简后”的规范等式
+        const same = pa.size === pb.size && [...pa].every(([k, val]) => {
+          const w = pb.get(k);
+          return w && w.n === val.n && w.d === val.d;
+        });
+        if (!same) throw new RuleError('代数化简：两边不是同一个多项式，等式不成立');
+        // 若给出的两个式子写法不同，就把左边化简成与右边一致的形式（像纸笔演算那样）
+        if (!termEq(P[0].a, P[0].b)) return out({ k: 'eq', a: polyToTerm(pa), b: P[0].b });
+        // 两边写法相同：化简后给出结论（例如 2x+2x = 2x+2x ⟹ 4x = 4x）
+        return out({ k: 'eq', a: polyToTerm(pa), b: polyToTerm(pb) });
+      }
+      const ok = ringEqual(P[0].a, P[0].b);
+      if (ok === null) throw new RuleError('代数化简：暂不支持出现除法/绝对值/集合的式子（请用 =Sub 手工替换）');
+      if (!ok) throw new RuleError('代数化简：两边不是同一个多项式，等式不成立');
+      return out({ k: 'eq', a: P[0].a, b: P[0].b });
+    }
+    default: throw new RuleError('规则 ' + req.rule + ' 尚未实现');
+  }
+}
+
+// 合上最内层子证明后，结论仍依赖外层假设
+function restScope(state, scopeId) {
+  const rest = state.scopeStack.filter((id) => id !== scopeId);
+  return rest.length ? rest.join('|') : null;
+}
+
+// ∃I 专用：把见证项 t 在公式中“闭合”成 ∃x
+function closeForEx(f, t, name) {
+  const BT_ = f;
+  const sub = openAtInverse(f, t, name);
+  return sub;
+}
+function openAtInverse(f, t, name) {
+  // 用 closeAt 逻辑：把自由变量 t 的名字绑定到新的 ∃
+  // 这里直接复用 closeAt 的语义（避免循环依赖）
+  return closeAtFormula(f, t.name, name);
+}
+function closeAtFormula(f, fvName, bindName) {
+  const rec = (node, depth) => {
+    switch (node.k) {
+      case 'atom': return atom(node.name, ...node.args.map((t) => recT(t, depth)));
+      case 'eq': return eq(recT(node.a, depth), recT(node.b, depth));
+      case 'not': return not(rec(node.a, depth));
+      case 'and': return and(rec(node.a, depth), rec(node.b, depth));
+      case 'or': return or(rec(node.a, depth), rec(node.b, depth));
+      case 'imp': return imp(rec(node.a, depth), rec(node.b, depth));
+      case 'iff': return iff(rec(node.a, depth), rec(node.b, depth));
+      case 'all': return all(node.name, rec(node.body, depth + 1));
+      case 'ex': return ex(node.name, rec(node.body, depth + 1));
+      default: return node;
+    }
+  };
+  const recT = (t, depth) => {
+    switch (t.k) {
+      case 'v': return (t.free && t.name === fvName) ? { k: 'b', i: depth } : t;
+      case 'c': return c0(t.name, ...t.args.map((x) => recT(x, depth)));
+      default: return t;
+    }
+  };
+  return rec(f, 0);
+}
+
+/* ---------- 假设作用域 ---------- */
+function openAssumption(state, formula, label) {
+  const id = 'H' + (++state.assumeCount);
+  state.assumptions = state.assumptions || {};
+  state.assumptions[id] = formula;
+  const fact = { id: 'a' + state.nextId++, f: formula, rule: 'assume', from: [], scope: id, name: label || ('假设 ' + id) };
+  state.facts.push(fact);
+  return fact;
+}
+
+/* ---------- 生成新事实 ---------- */
+function makeFact(state, res, fromIds, forceId) {
+  const fact = {
+    id: forceId || ('f' + state.nextId++),
+    f: res.f,
+    rule: res.rule,
+    from: fromIds || [],
+    terms: res.terms || [],
+    scope: res.scope ?? null,
+    pick: res.pick,
+  };
+  state.facts.push(fact);
+  return fact;
+}
+function factText(state, fact) {
+  if (fact.rule === 'assume') return '假设：' + fstr(fact.f);
+  if (fact.rule === 'hyp') return '引用前提';
+  const spec = RULES[fact.rule];
+  const terms = (fact.terms || []).map((t) => termStr(t)).join('、');
+  return (spec ? spec.name : fact.rule) + (terms ? ' [' + terms + ']' : '');
+}
+
+/* ---------- 可点击的项候选 ---------- */
+function termCandidates(state) {
+  const seen = new Map();
+  const add = (t) => {
+    const s = termStr(t);
+    if (!seen.has(s)) seen.set(s, t);
+  };
+  for (const f of state.facts) {
+    const sym = symbolsIn(f.f);
+    for (const name of sym.vars) add(v(name, true));
+    for (const name of sym.funcs) {
+      if (name === 'add' || name === 'mul' || name === 'sub' || name === 'div') continue;
+      add(c0(name, v('x', true)));
+    }
+  }
+  add(v('x', true)); add(v('y', true)); add(v('z', true));
+  return [...seen.entries()].map(([s, t]) => ({ label: s, term: t }));
+}
+
+Object.assign(m, {"isBot": isBot, "allFacts": allFacts, "decompose": decompose, "rebuild": rebuild, "rewriteOptions": rewriteOptions, "safeVarsOf": safeVarsOf, "rewriteTermOptions": rewriteTermOptions, "rewriteTermDeep": rewriteTermDeep, "altsOrKeep": altsOrKeep, "cartesian": cartesian, "gcdInt": gcdInt, "frac": frac, "fAdd": fAdd, "fMul": fMul, "fNeg": fNeg, "fZero": fZero, "fOne": fOne, "MONO_ONE": MONO_ONE, "monoKey": monoKey, "monoMul": monoMul, "polyZero": polyZero, "polyConst": polyConst, "polyVar": polyVar, "polyAdd": polyAdd, "polyNeg": polyNeg, "polySub": polySub, "polyMul": polyMul, "polyPow": polyPow, "polyOfTerm": polyOfTerm, "polyStr": polyStr, "polyToTerm": polyToTerm, "negativeTerm": negativeTerm, "monoDegree": monoDegree, "monoToTerm": monoToTerm, "fracToTerm": fracToTerm, "absFrac": absFrac, "ringEqual": ringEqual, "ringJustification": ringJustification, "RULES": RULES, "RULE_ORDER": RULE_ORDER, "evalConcrete": evalConcrete, "evalReduce": evalReduce, "splitCoefficient": splitCoefficient, "flattenAdd": flattenAdd, "factorOut": factorOut, "EQUATION_OPS": EQUATION_OPS, "RuleError": RuleError, "runRule": runRule, "restScope": restScope, "closeForEx": closeForEx, "openAtInverse": openAtInverse, "closeAtFormula": closeAtFormula, "openAssumption": openAssumption, "makeFact": makeFact, "factText": factText, "termCandidates": termCandidates});
+return m;
+})();
+reg["src/data/axioms.js"] = (function () {
+  let m;
+m = {};
+// data/axioms.js —— 公理库：一切证明的起点
+// 说明：文本与中学课本一致；每条都标注适用对象（实数 / 集合）。
+const {parse, alphaEq, fstr} = reg["src/core/logic.js"];
+
+/* ---------------- 命题逻辑（L0 的基础，不是数学公理） ---------------- */
+const PROPOSITIONAL = {
+  id: 'PL',
+  title: '命题逻辑基本规律',
+  items: [
+    { id: 'PL1', src: 'A -> (B -> A)', note: '肯定前件的“重复”形式：已有 A 时 B 不改变 A' },
+    { id: 'PL2', src: '(A -> (B -> C)) -> ((A -> B) -> (A -> C))', note: '蕴含的分配' },
+    { id: 'PL3', src: 'A -> (B -> (A /\\ B))', note: '合取引入' },
+    { id: 'PL4', src: '(A /\\ B) -> A', note: '合取消去（左）' },
+    { id: 'PL5', src: '(A /\\ B) -> B', note: '合取消去（右）' },
+    { id: 'PL6', src: 'A -> (A \\/ B)', note: '析取引入（左）' },
+    { id: 'PL7', src: 'B -> (A \\/ B)', note: '析取引入（右）' },
+    { id: 'PL8', src: '(A -> C) -> ((B -> C) -> ((A \\/ B) -> C))', note: '分情况讨论' },
+    { id: 'PL9', src: '(A -> B) -> ((A -> ¬B) -> ¬A)', note: '归谬：两头推出矛盾则 A 假' },
+    { id: 'PL10', src: '(¬A -> B) -> ((¬A -> ¬B) -> A)', note: '反证法' },
+    { id: 'PL11', src: 'A \\/ ¬A', note: '排中律（经典逻辑）' },
+    { id: 'PL12', src: '(A -> B) -> ((B -> A) -> (A ↔ B))', note: '等价引入' },
+    { id: 'PL13', src: '(A ↔ B) -> (A -> B)', note: '等价消去（→方向）' },
+    { id: 'PL14', src: '(A ↔ B) -> (B -> A)', note: '等价消去（←方向）' },
+  ],
+};
+
+/* ---------------- 实数域公理（L1 代数） ---------------- */
+const FIELD = {
+  id: 'F',
+  title: '实数域公理（代数运算的地基）',
+  items: [
+    { id: 'F1', src: 'forall a b c. a + (b + c) = (a + b) + c', note: '加法结合律' },
+    { id: 'F2', src: 'forall a b. a + b = b + a', note: '加法交换律' },
+    { id: 'F3', src: 'forall a. a + 0 = a', note: '加法单位元' },
+    { id: 'F4', src: 'forall a. a + (-a) = 0', note: '加法逆元' },
+    { id: 'F5', src: 'forall a b c. a * (b * c) = (a * b) * c', note: '乘法结合律' },
+    { id: 'F6', src: 'forall a b. a * b = b * a', note: '乘法交换律' },
+    { id: 'F7', src: 'forall a. a * 1 = a', note: '乘法单位元' },
+    { id: 'F8', src: 'forall a. a ≠ 0 -> a * (1 / a) = 1', note: '乘法逆元（a ≠ 0）' },
+    { id: 'F9', src: 'forall a b c. a * (b + c) = a * b + a * c', note: '分配律' },
+    { id: 'F10', src: '0 ≠ 1', note: '域非退化' },
+    { id: 'F11', src: 'forall a b. a - b = a + (-b)', note: '减法定义' },
+    { id: 'F12', src: 'forall a. a² = a * a', note: '平方定义' },
+    { id: 'F13', src: 'forall a. a * 0 = 0', note: '零的乘法性质（可由公理推出，此处直接给出）' },
+  ],
+};
+
+/* ---------------- 序公理 ---------------- */
+const ORDER = {
+  id: 'O',
+  title: '序公理（不等式的地基）',
+  items: [
+    { id: 'O1', src: 'forall a b. a < b \\/ a = b \\/ b < a', note: '三歧性（任意两个实数可比）' },
+    { id: 'O2', src: 'forall a b c. a < b -> b < c -> a < c', note: '传递性' },
+    { id: 'O3', src: 'forall a b c. a < b -> a + c < b + c', note: '不等式两边同加' },
+    { id: 'O4', src: 'forall a b. 0 < a -> 0 < b -> 0 < a * b', note: '正数之积为正' },
+    { id: 'O5', src: 'forall a. a < 0 ↔ 0 < -a', note: '相反数与序' },
+    { id: 'O6', src: 'forall a b. a ≤ b ↔ (a < b \\/ a = b)', note: '≤ 的定义' },
+    { id: 'O7', src: 'forall a. a² ≥ 0', note: '平方非负（课本结论）' },
+    { id: 'O8', src: 'forall a b. a < b -> 0 < b - a', note: '差与序' },
+    { id: 'O9', src: 'forall a b. a > b ↔ b < a', note: '> 记号的方向' },
+  ],
+};
+
+/* ---------------- 绝对值与函数 ---------------- */
+const ABS_FUNC = {
+  id: 'M',
+  title: '绝对值与函数单调性',
+  items: [
+    { id: 'M1', src: 'forall a. a ≥ 0 -> |a| = a', note: '绝对值定义（非负分支）' },
+    { id: 'M2', src: 'forall a. a ≤ 0 -> |a| = -a', note: '绝对值定义（负分支）' },
+    { id: 'M3', src: 'forall a. |a| ≥ 0', note: '绝对值非负' },
+    { id: 'M4', src: 'forall a b. |a * b| = |a| * |b|', note: '绝对值的乘法性质' },
+    { id: 'M5', src: 'forall a b. |a + b| ≤ |a| + |b|', note: '三角不等式' },
+    { id: 'M6', src: 'forall k b x y. 0 < k -> x < y -> k * x + b < k * y + b', note: '一次函数 k>0 时递增（定义展开）' },
+    { id: 'M7', src: 'forall k b x y. k < 0 -> x < y -> k * y + b < k * x + b', note: '一次函数 k<0 时递减' },
+  ],
+};
+
+/* ---------------- 集合（L1 末段 / L2 预告） ---------------- */
+const SETS = {
+  id: 'S',
+  title: '集合公理',
+  items: [
+    { id: 'S1', src: 'forall A B. A = B ↔ (forall x. x ∈ A ↔ x ∈ B)', note: '外延公理：集合由元素决定' },
+    { id: 'S2', src: 'forall A B x. x ∈ A -> subset(A, B) -> x ∈ B', note: '子集定义的展开（subset 是 ⊆ 的谓词记号）' },
+  ],
+};
+
+const ALL_SETS = [PROPOSITIONAL, FIELD, ORDER, ABS_FUNC, SETS];
+const SET_BY_ID = Object.fromEntries(ALL_SETS.map((s) => [s.id, s]));
+
+/* 解析成公式对象（做题时用） */
+function buildAxioms(setIds, sig, opts = {}) {
+  const out = [];
+  // pick：只取指定 id 的公理。用于“这题只需要交换律”这类精简，能显著缩小搜证空间
+  const pick = opts.pick ? new Set(opts.pick) : null;
+  for (const id of setIds) {
+    const set = SET_BY_ID[id];
+    if (!set) throw new Error('未知公理组: ' + id);
+    for (const item of set.items) {
+      if (pick && !pick.has(item.id)) continue;
+      let f;
+      try { f = parse(item.src, sig, opts); }
+      catch (e) { throw new Error('公理 ' + item.id + ' 解析失败: ' + e.message + '  ←  ' + item.src); }
+      out.push({ id: item.id, f, note: item.note, set: set.id, title: set.title, src: item.src });
+    }
+  }
+  return out;
+}
+
+
+Object.assign(m, {"PROPOSITIONAL": PROPOSITIONAL, "FIELD": FIELD, "ORDER": ORDER, "ABS_FUNC": ABS_FUNC, "SETS": SETS, "ALL_SETS": ALL_SETS, "SET_BY_ID": SET_BY_ID, "buildAxioms": buildAxioms});
+return m;
+})();
+reg["src/data/found-proofs.js"] = (function () {
+  let m;
+m = {};
+// src/data/found-proofs.js —— 由 tools/gen-proofs.mjs 自动生成：解算器搜到的证明
+// 说明：这是搜索器的产物，与 levels.js 里手写的标准证明相互独立，用于交叉验证与提示。
+// 重新生成：node tools/gen-proofs.mjs
+
+const FOUND_PROOFS = {
+  "L0-01": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p1"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 3,
+    "nodes": 1
+  },
+  "L0-02": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "atom",
+          "name": "A",
+          "args": []
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "H1"
+        ]
+      },
+      {
+        "rule": "impI",
+        "ids": [
+          "f1"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 2
+  },
+  "L0-03": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "B",
+            "args": []
+          }
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "H1",
+          "f1"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f2"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [
+      {
+        "rule": "impE",
+        "ids": [
+          "p1",
+          "p2"
+        ]
+      }
+    ],
+    "ms": 1,
+    "nodes": 4
+  },
+  "L0-04": {
+    "steps": [
+      {
+        "rule": "andE",
+        "ids": [
+          "p1"
+        ],
+        "pick": "左"
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 3
+  },
+  "L0-05": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p1"
+        ]
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "p2"
+        ]
+      },
+      {
+        "rule": "andI",
+        "ids": [
+          "f1",
+          "f2"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 3
+  },
+  "L0-06": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p1"
+        ]
+      },
+      {
+        "rule": "orI",
+        "ids": [
+          "f1"
+        ],
+        "formula": {
+          "k": "or",
+          "a": {
+            "k": "atom",
+            "name": "A",
+            "args": []
+          },
+          "b": {
+            "k": "atom",
+            "name": "B",
+            "args": []
+          }
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 2
+  },
+  "L0-07": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p2"
+        ]
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "p3"
+        ]
+      },
+      {
+        "rule": "orE",
+        "ids": [
+          "p1",
+          "f1",
+          "f2"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 25
+  },
+  "L0-08": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "atom",
+          "name": "A",
+          "args": []
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "impE",
+        "ids": [
+          "p1",
+          "H1"
+        ]
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "p2",
+          "f1"
+        ]
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "bot"
+          }
+        },
+        "scope": "H2"
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "f2"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f3"
+        ],
+        "scope": "H2"
+      },
+      {
+        "rule": "negI",
+        "ids": [
+          "f4"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 13
+  },
+  "L0-09": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "A",
+            "args": []
+          }
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "impE",
+        "ids": [
+          "p1",
+          "H1"
+        ]
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "bot"
+          }
+        },
+        "scope": "H2"
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "f1"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f2"
+        ],
+        "scope": "H2"
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f3"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 11
+  },
+  "L0-10": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "B",
+            "args": []
+          }
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "atom",
+          "name": "A",
+          "args": []
+        },
+        "scope": "H2"
+      },
+      {
+        "rule": "impE",
+        "ids": [
+          "p1",
+          "H2"
+        ]
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "H1",
+          "f1"
+        ]
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "bot"
+          }
+        },
+        "scope": "H3"
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "f2"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f3"
+        ],
+        "scope": "H3"
+      },
+      {
+        "rule": "negI",
+        "ids": [
+          "f4"
+        ],
+        "scope": "H2"
+      },
+      {
+        "rule": "impI",
+        "ids": [
+          "f5"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 40
+  },
+  "L0-11": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "not",
+            "a": {
+              "k": "atom",
+              "name": "A",
+              "args": []
+            }
+          }
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "A",
+            "args": []
+          }
+        },
+        "scope": "H2"
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "H1",
+          "H2"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f1"
+        ],
+        "scope": "H2"
+      },
+      {
+        "rule": "impI",
+        "ids": [
+          "f2"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 9
+  },
+  "L0-12": null,
+  "L0-13": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "atom",
+          "name": "A",
+          "args": []
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "impE",
+        "ids": [
+          "p1",
+          "H1"
+        ]
+      },
+      {
+        "rule": "impE",
+        "ids": [
+          "p2",
+          "f1"
+        ]
+      },
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "C",
+            "args": []
+          }
+        },
+        "scope": "H2"
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "H2",
+          "f2"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f3"
+        ],
+        "scope": "H2"
+      },
+      {
+        "rule": "impI",
+        "ids": [
+          "f4"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 23
+  },
+  "L0-14": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "f2"
+        ]
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "f1"
+        ]
+      },
+      {
+        "rule": "iffI",
+        "ids": [
+          "f3",
+          "f4"
+        ]
+      }
+    ],
+    "derivations": [
+      {
+        "rule": "iffE",
+        "ids": [
+          "p1"
+        ],
+        "pick": "→"
+      },
+      {
+        "rule": "iffE",
+        "ids": [
+          "p1"
+        ],
+        "pick": "←"
+      }
+    ],
+    "ms": 0,
+    "nodes": 3
+  },
+  "L1-01": {
+    "steps": [
+      {
+        "rule": "eqSym",
+        "ids": [
+          "p1"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 3
+  },
+  "L1-02": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p2"
+        ]
+      },
+      {
+        "rule": "eqTrans",
+        "ids": [
+          "p1",
+          "f1"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 4
+  },
+  "L1-03": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "add",
+          "args": [
+            {
+              "k": "v",
+              "name": "y",
+              "free": false
+            },
+            {
+              "k": "n",
+              "n": 1
+            }
+          ]
+        }
+      },
+      {
+        "rule": "eqRewrite",
+        "ids": [
+          "p1",
+          "f1"
+        ],
+        "pick": "左"
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 5
+  },
+  "L1-04": {
+    "steps": [
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:F2"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "f1"
+        ],
+        "term": {
+          "k": "v",
+          "name": "y",
+          "free": false
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 12,
+    "nodes": 13
+  },
+  "L1-05": null,
+  "L1-06": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "add",
+          "args": [
+            {
+              "k": "v",
+              "name": "y",
+              "free": false
+            },
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "eqRewrite",
+        "ids": [
+          "p1",
+          "f1"
+        ],
+        "pick": "左"
+      }
+    ],
+    "derivations": [],
+    "ms": 1,
+    "nodes": 5
+  },
+  "L1-07": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "mul",
+          "args": [
+            {
+              "k": "n",
+              "n": 5
+            },
+            {
+              "k": "v",
+              "name": "x",
+              "free": false
+            }
+          ]
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 12,
+    "nodes": 79
+  },
+  "L1-08": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "add",
+          "args": [
+            {
+              "k": "c",
+              "name": "add",
+              "args": [
+                {
+                  "k": "c",
+                  "name": "sq",
+                  "args": [
+                    {
+                      "k": "v",
+                      "name": "x",
+                      "free": false
+                    }
+                  ]
+                },
+                {
+                  "k": "c",
+                  "name": "mul",
+                  "args": [
+                    {
+                      "k": "n",
+                      "n": 2
+                    },
+                    {
+                      "k": "v",
+                      "name": "x",
+                      "free": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "k": "n",
+              "n": 1
+            }
+          ]
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 18,
+    "nodes": 79
+  },
+  "L1-09": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "sub",
+          "args": [
+            {
+              "k": "c",
+              "name": "sq",
+              "args": [
+                {
+                  "k": "v",
+                  "name": "x",
+                  "free": false
+                }
+              ]
+            },
+            {
+              "k": "c",
+              "name": "sq",
+              "args": [
+                {
+                  "k": "v",
+                  "name": "y",
+                  "free": false
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 18,
+    "nodes": 79
+  },
+  "L1-10": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p1"
+        ]
+      },
+      {
+        "rule": "eqOp",
+        "ids": [
+          "f1"
+        ],
+        "op": {
+          "name": "sub",
+          "n": 1
+        }
+      },
+      {
+        "rule": "eqOp",
+        "ids": [
+          "f2"
+        ],
+        "op": {
+          "name": "div",
+          "n": 2
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 8,
+    "nodes": 846
+  },
+  "L1-11": {
+    "steps": [
+      {
+        "rule": "assume",
+        "assume": {
+          "k": "not",
+          "a": {
+            "k": "atom",
+            "name": "ge",
+            "args": [
+              {
+                "k": "c",
+                "name": "sq",
+                "args": [
+                  {
+                    "k": "v",
+                    "name": "a",
+                    "free": false
+                  }
+                ]
+              },
+              {
+                "k": "n",
+                "n": 0
+              }
+            ]
+          }
+        },
+        "scope": "H1"
+      },
+      {
+        "rule": "negE",
+        "ids": [
+          "H1",
+          "f26"
+        ]
+      },
+      {
+        "rule": "raa",
+        "ids": [
+          "f37"
+        ],
+        "scope": "H1"
+      }
+    ],
+    "derivations": [
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O1"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O1"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O1"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O1"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O2"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O2"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O2"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O2"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O3"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O3"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O3"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O3"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O4"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O4"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O4"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O4"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O5"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O5"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O5"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O5"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O6"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O6"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O6"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O6"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O7"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O7"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O7"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O7"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O8"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O8"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O8"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O8"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O9"
+        ],
+        "term": {
+          "k": "c",
+          "name": "sq",
+          "args": [
+            {
+              "k": "v",
+              "name": "a",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O9"
+        ],
+        "term": {
+          "k": "v",
+          "name": "a",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O9"
+        ],
+        "term": {
+          "k": "n",
+          "n": 0
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:O9"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": true
+        }
+      }
+    ],
+    "ms": 9,
+    "nodes": 171
+  },
+  "L1-12": null,
+  "L1-13": null,
+  "L1-14": null,
+  "L0-15": {
+    "steps": [
+      {
+        "rule": "hyp",
+        "ids": [
+          "p1"
+        ]
+      },
+      {
+        "rule": "hyp",
+        "ids": [
+          "p3"
+        ]
+      },
+      {
+        "rule": "orE",
+        "ids": [
+          "p4",
+          "f1",
+          "f2"
+        ]
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 36
+  },
+  "L0-16": null,
+  "L1-15": {
+    "steps": [
+      {
+        "rule": "allE",
+        "ids": [
+          "ax:F2"
+        ],
+        "term": {
+          "k": "v",
+          "name": "y",
+          "free": false
+        }
+      },
+      {
+        "rule": "allE",
+        "ids": [
+          "f1"
+        ],
+        "term": {
+          "k": "v",
+          "name": "x",
+          "free": false
+        }
+      }
+    ],
+    "derivations": [],
+    "ms": 0,
+    "nodes": 3
+  },
+  "L1-16": {
+    "steps": [
+      {
+        "rule": "eqRefl",
+        "ids": [],
+        "term": {
+          "k": "c",
+          "name": "add",
+          "args": [
+            {
+              "k": "c",
+              "name": "add",
+              "args": [
+                {
+                  "k": "v",
+                  "name": "x",
+                  "free": false
+                },
+                {
+                  "k": "v",
+                  "name": "y",
+                  "free": false
+                }
+              ]
+            },
+            {
+              "k": "v",
+              "name": "z",
+              "free": false
+            }
+          ]
+        }
+      },
+      {
+        "rule": "eqRewrite",
+        "ids": [
+          "p1",
+          "f1"
+        ],
+        "pick": "左"
+      }
+    ],
+    "derivations": [],
+    "ms": 2,
+    "nodes": 5
+  }
+};
+
+Object.assign(m, {"FOUND_PROOFS": FOUND_PROOFS});
+return m;
+})();
+reg["src/core/level-utils.js"] = (function () {
+  let m;
+m = {};
+// core/level-utils.js —— 把关卡定义编译成可用的记号表 / 公式 / 公理
+const {parse, parseLenient, makeSig, freeVars} = reg["src/core/logic.js"];
+const {buildAxioms} = reg["src/data/axioms.js"];
+
+const ATOM_NAME_RE = /^[A-Z][A-Za-z0-9']*$/;
+const EXTRA_PREDS = { subset: { arity: 2 }, mono: { arity: 1 }, even: { arity: 1 }, odd: { arity: 1 } };
+
+// 先验：单字母大写 A–Z 与小写 p–z 优先当作命题原子
+const SEED_ATOMS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').concat('p q r s t u v w'.split(' '));
+
+function buildSigForLevel(level) {
+  const atoms = new Set(SEED_ATOMS.concat(level.atoms || []));
+  const scanSig = () => makeSig({ atoms: [], preds: { ...EXTRA_PREDS, ...(level.preds || {}) } });
+  for (const src of [...(level.premises || []), level.goal, ...(level.extraFormulas || [])]) {
+    try {
+      const f = parseLenient(src, scanSig());
+      scanAtoms(f, atoms);
+    } catch (e) { throw new Error('关卡 ' + level.id + ' 的公式解析失败：' + e.message + '  ←  ' + src); }
+  }
+  for (const set of level.axiomSets || []) {
+    const ax = buildAxioms([set], makeSig({ atoms: [], preds: { ...EXTRA_PREDS, ...(level.preds || {}) } }), { pick: level.axiomPick });
+    for (const a of ax) scanAtoms(a.f, atoms);
+  }
+  return makeSig({ atoms: [...atoms], funcs: level.funcs || {}, preds: { ...EXTRA_PREDS, ...(level.preds || {}) } });
+}
+function scanAtoms(f, out) {
+  switch (f.k) {
+    case 'atom': if (ATOM_NAME_RE.test(f.name) && f.args.length === 0) out.add(f.name); f.args.forEach((t) => scanTermAtoms(t, out)); break;
+    case 'eq': scanTermAtoms(f.a, out); scanTermAtoms(f.b, out); break;
+    case 'not': scanAtoms(f.a, out); break;
+    case 'and': case 'or': case 'imp': case 'iff': scanAtoms(f.a, out); scanAtoms(f.b, out); break;
+    case 'all': case 'ex': scanAtoms(f.body, out); break;
+  }
+}
+function scanTermAtoms(t, out) {
+  if (t.k === 'v' && t.free && ATOM_NAME_RE.test(t.name)) out.add(t.name);
+  if (t.k === 'c') t.args.forEach((a) => scanTermAtoms(a, out));
+}
+
+function compileLevel(level) {
+  const greedy = makeSig({ atoms: [] });
+  const openVars = new Set();
+  for (const src of [...(level.premises || []), level.goal]) {
+    try { for (const n of freeVars(parseLenient(src, greedy))) openVars.add(n); } catch (e) { /* 正式解析时会报错 */ }
+  }
+  const sig = buildSigForLevel(level);
+  const pOpts = { fixed: openVars };
+  const parsedPremises = (level.premises || []).map((src) => ({ src, f: parse(src, sig, pOpts) }));
+  const goal = parse(level.goal, sig, pOpts);
+  const axioms = buildAxioms(level.axiomSets || [], sig, { pick: level.axiomPick });
+  return { ...level, sig, pOpts, parsedPremises, goal, axioms, openVars };
+}
+
+Object.assign(m, {"ATOM_NAME_RE": ATOM_NAME_RE, "EXTRA_PREDS": EXTRA_PREDS, "SEED_ATOMS": SEED_ATOMS, "buildSigForLevel": buildSigForLevel, "scanAtoms": scanAtoms, "scanTermAtoms": scanTermAtoms, "compileLevel": compileLevel});
+return m;
+})();
+reg["src/core/proof.js"] = (function () {
+  let m;
+m = {};
+// core/proof.js —— 证明状态机：把关卡、公理、规则串起来
+const {parse, parseTerm, alphaEq, fstr, termStr, eq, atom} = reg["src/core/logic.js"];
+const {runRule, makeFact, RULES, RuleError, evalConcrete} = reg["src/core/rules.js"];
+const {compileLevel} = reg["src/core/level-utils.js"];
+
+/* 关卡 -> 初始证明状态 */
+function createState(level) {
+  const compiled = level.sig ? level : compileLevel(level);
+  const state = {
+    level: compiled,
+    compiled,
+    facts: [],
+    nextId: 1,
+    assumeCount: 0,
+    assumptions: {},
+    scopeStack: [],
+    closedScopes: [],     // 已经合上的子证明：界面据此把它们画成灰的，不再可选
+    goal: compiled.goal,
+    solved: false,
+  };
+  compiled.parsedPremises.forEach((p, i) => {
+    state.facts.push({ id: 'p' + (i + 1), f: p.f, rule: 'premise', from: [], scope: null, src: p.src, given: true });
+  });
+  compiled.axioms.forEach((ax) => {
+    state.facts.push({ id: 'ax:' + ax.id, f: ax.f, rule: 'axiom', from: [], scope: null, ax, given: true });
+  });
+  return state;
+}
+
+const termOf = (state, t) => (typeof t === 'string' ? parseTerm(t, state.compiled.sig, state.compiled.pOpts) : t);
+
+/* 深拷贝证明状态：用于“试算”候选步骤，绝不污染真实状态 */
+function cloneState(state) {
+  return {
+    level: state.level, compiled: state.compiled, goal: state.goal, solved: state.solved,
+    facts: state.facts.map((f) => ({ ...f })),
+    nextId: state.nextId,
+    assumeCount: state.assumeCount,
+    assumptions: { ...state.assumptions },
+    scopeStack: state.scopeStack.slice(),
+    closedScopes: (state.closedScopes || []).slice(),
+  };
+}
+
+/* 在副本上试一步：{ok:true, fact} 或 {ok:false, error} */
+function tryStep(state, step) {
+  const copy = cloneState(state);
+  try {
+    const fact = applyStep(copy, step);
+    return { ok: true, fact, state: copy };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+/* 统一步骤格式：{rule,ids,term,pick,formula} | {assume} | {lemma,terms} */
+function applyStep(state, step) {
+  // formula / term / assume 都允许写成字符串：关卡脚本与提示里这样写可读性好得多
+  if (step && typeof step.formula === 'string') step = { ...step, formula: parse(step.formula, state.compiled.sig, state.compiled.pOpts) };
+  if (step && step.term !== undefined && step.term !== null && typeof step.term === 'string') step = { ...step, term: parseTerm(step.term, state.compiled.sig, state.compiled.pOpts) };
+  if (step.assume !== undefined) {
+    const f = typeof step.assume === 'string' ? parse(step.assume, state.compiled.sig, state.compiled.pOpts) : step.assume;
+    const id = step.id || ('H' + (++state.assumeCount));
+    if (step.id) state.assumeCount++;
+    state.assumptions[id] = f;
+    const fact = { id, f, rule: 'assume', from: [], scope: id, label: step.label };
+    state.facts.push(fact);
+    state.scopeStack.push(id);
+    return fact;
+  }
+  if (step.lemma !== undefined) {
+    const ax = state.compiled.axioms.find((a) => a.id === step.lemma);
+    if (!ax) throw new RuleError('找不到公理 ' + step.lemma);
+    let cur = state.facts.find((f) => f.id === 'ax:' + ax.id);
+    const terms = step.terms || [];
+    terms.forEach((tsrc, i) => {
+      const res = runRule(state, { rule: 'allE', ids: [cur.id], term: termOf(state, tsrc) });
+      cur = makeFact(state, res, [cur.id]);
+      if (step.ids && i === terms.length - 1) cur.id = step.ids;
+    });
+    if (step.id) cur.id = step.id;
+    return cur;
+  }
+  const req = { rule: step.rule, ids: (step.ids || []).slice(), term: step.term, formula: step.formula, pick: step.pick, op: step.op };
+  if (typeof req.term === 'string') req.term = termOf(state, req.term);
+  if (typeof req.formula === 'string') req.formula = parse(req.formula, state.compiled.sig, state.compiled.pOpts);
+  if (step.rule === 'ring' || step.rule === 'arith') {
+    if (req.ids.length === 0) {
+      // 允许直接给出“要证明的式子”：先造一个自反的种子式，再由规则化简/判定
+      const f = req.formula;
+      if (!f) throw new RuleError('代数化简/数值计算需要给出目标式子或选择一个前提');
+      let seed = null;
+      if (f.k === 'eq') seed = eq(f.a, f.a);
+      else if (f.k === 'atom' && ['lt', 'le', 'gt', 'ge'].indexOf(f.name) >= 0) seed = atom(f.name, f.args[0], f.args[0]);
+      else if (f.k === 'not' && f.a.k === 'eq') seed = f;
+      if (!seed) throw new RuleError('代数化简/数值计算支持等式、不等式与“不等于”');
+      if (f.k !== 'eq') {
+        // 不等式/不等于：先判定真伪，再把该具体命题登记为一条结果
+        const rel = f.k === 'not' ? f.a : f;
+        const a = evalConcrete(rel.args[0]), b = evalConcrete(rel.args[1]);
+        if (a === null || b === null) throw new RuleError('数值计算：两边必须都是具体数字');
+        if (f.k === 'not') {
+          if (a === b) throw new RuleError('数值计算：' + a + ' = ' + b + '，不能断言不等');
+        } else {
+          const ok = f.name === 'lt' ? a < b : f.name === 'le' ? a <= b : f.name === 'gt' ? a > b : a >= b;
+          if (!ok) throw new RuleError('数值计算：' + a + ' 与 ' + b + ' 不满足该关系');
+        }
+        const fact = makeFact(state, { f, rule: 'arith', terms: [], scope: null }, []);
+        if (step.id) fact.id = step.id;
+        return fact;
+      }
+      // 等式：若玩家直接给出了具体数值等式（如 |-3| = 3），直接判定真伪
+      const la = evalConcrete(f.a), lb = evalConcrete(f.b);
+      if (la !== null && lb !== null) {
+        if (la !== lb) throw new RuleError('数值计算：' + la + ' ≠ ' + lb);
+        const fact = makeFact(state, { f, rule: 'arith', terms: [], scope: null }, []);
+        if (step.id) fact.id = step.id;
+        return fact;
+      }
+      const refl = makeFact(state, { f: seed, rule: 'eqRefl', terms: [], scope: null }, []);
+      req.ids = [refl.id];
+    }
+    const res = runRule(state, req);
+    const fact = makeFact(state, res, req.ids);
+    if (step.id) fact.id = step.id;
+    syncScopes(state);
+    return fact;
+  }
+  const res = runRule(state, req);
+  const fact = makeFact(state, res, req.ids);
+  if (step.id) fact.id = step.id;
+  syncScopes(state);
+  return fact;
+}
+
+// 规则合上子证明后，同步作用域栈（弹掉已关闭的假设）
+function syncScopes(state) {
+  const open = new Set();
+  for (const f of state.facts) {
+    if (!f.scope) continue;
+    for (const s of String(f.scope).split('|')) if (s) open.add(s);
+  }
+  // 事实若依赖了“已不在假设表里”的假设，就作废（子证明结束后不能再引用）
+  state.facts = state.facts.filter((f) => {
+    if (!f.scope) return true;
+    return String(f.scope).split('|').every((id) => state.assumptions[id] !== undefined);
+  });
+  state.scopeStack = state.scopeStack.filter((id) => state.assumptions[id] !== undefined);
+}
+
+/* 运行证明脚本（测试 / 提示 / 自动演示） */
+function runScript(level, script) {
+  const state = createState(level);
+  const steps = [];
+  try {
+    for (const step of script) {
+      const fact = applyStep(state, step);
+      steps.push({ step, fact });
+    }
+  } catch (e) {
+    return { state, steps, ok: false, error: e.message, solved: false };
+  }
+  return { state, steps, ok: true, solved: goalReached(state), matched: matchedFact(state) };
+}
+
+function goalReached(state) { return !!matchedFact(state); }
+function matchedFact(state) {
+  // 只有“推导出来的”事实才算完成：题设/公理本身不能算证完（除非目标就是它，见 isTrivial）
+  return state.facts.find((f) => !f.scope && !f.given && alphaEq(f.f, state.goal)) || null;
+}
+function isTrivial(level) {
+  const st = createState(level);
+  return st.facts.some((f) => alphaEq(f.f, st.goal));
+}
+
+/* 撤销 / 作用域 */
+function undo(state) {
+  const last = state.facts.pop();
+  if (!last) return null;
+  if (last.rule === 'assume') {
+    delete state.assumptions[last.scope];
+    const i = state.scopeStack.indexOf(last.scope);
+    if (i >= 0) state.scopeStack.splice(i, 1);
+  }
+  return last;
+}
+function visibleFacts(state) {
+  // 注意：一个事实可能同时依赖多层假设，作用域写成 "H1|H2"。
+  // 必须逐段判断是否还在作用域栈里，不能拿整串去比（否则嵌套子证明里的事实会全部消失）。
+  return state.facts.filter((f) => {
+    if (!f.scope) return true;
+    return String(f.scope).split('|').every((id) => !id || state.scopeStack.indexOf(id) >= 0);
+  });
+}
+function openScopes(state) { return state.scopeStack.slice(); }
+function assumptionOf(state, scopeId) { return state.assumptions[scopeId]; }
+
+/* 生成“可点击的项”：来自目标与已有事实中出现的变量/函数 */
+function termCandidates(state) {
+  const seen = new Map();
+  // 关键：项在公式里可能位于量词之下，打印时必须带上绑定名上下文，
+  // 否则 x3 + (x2 + x1) 这种“合成变量名”会直接显示给玩家。
+  const add = (t, ctx) => {
+    const label = termStr(t, ctx);
+    if (!seen.has(label)) seen.set(label, { label, term: t });
+  };
+  const walkTerm = (t, ctx) => {
+    add(t, ctx);
+    if (t.k === 'c') t.args.forEach((a) => walkTerm(a, ctx));
+  };
+  const walk = (f, ctx) => {
+    switch (f.k) {
+      case 'atom': f.args.forEach((t) => walkTerm(t, ctx)); break;
+      case 'eq': walkTerm(f.a, ctx); walkTerm(f.b, ctx); break;
+      case 'not': walk(f.a, ctx); break;
+      case 'and': case 'or': case 'imp': case 'iff': walk(f.a, ctx); walk(f.b, ctx); break;
+      case 'all': case 'ex': walk(f.body, [f.name].concat(ctx)); break;
+    }
+  };
+  walk(state.goal, []);
+  for (const f of visibleFacts(state)) {
+    walk(f.f, []);
+    for (const t of (f.terms || [])) walkTerm(t, []);   // 已经用过的项也留着，便于继续推
+  }
+  return [...seen.values()];
+}
+
+/* 自动实例化：把全称公理用候选项实例化一层（供“展开公理”按钮） */
+function instantiateAxioms(state, limit = 240) {
+  const cands = termCandidates(state).map((c) => c.term);
+  const created = [];
+  for (const fact of state.facts.slice()) {
+    if (fact.f.k !== 'all') continue;
+    for (const t of cands) {
+      if (state.facts.length + created.length > limit) break;
+      try {
+        const res = runRule(state, { rule: 'allE', ids: [fact.id], term: t });
+        const dup = state.facts.some((f) => alphaEq(f.f, res.f)) || created.some((f) => alphaEq(f.f, res.f));
+        if (dup) continue;
+        created.push(makeFact(state, res, [fact.id]));
+      } catch (e) { /* 跳过 */ }
+    }
+  }
+  return created;
+}
+
+Object.assign(m, {"createState": createState, "termOf": termOf, "cloneState": cloneState, "tryStep": tryStep, "applyStep": applyStep, "syncScopes": syncScopes, "runScript": runScript, "goalReached": goalReached, "matchedFact": matchedFact, "isTrivial": isTrivial, "undo": undo, "visibleFacts": visibleFacts, "openScopes": openScopes, "assumptionOf": assumptionOf, "termCandidates": termCandidates, "instantiateAxioms": instantiateAxioms});
+return m;
+})();
+reg["src/data/levels.js"] = (function () {
+  let m;
+m = {};
+// data/levels.js —— L0（命题逻辑）+ L1（代数）关卡表
+// 每关：goal（要证的结论）、premises（题设/定义）、rules（可用规则）、axiomSets（可用公理）
+// script：标准证明（供“提示/验证/自测”使用）；每步 { assume | rule, ids, term, pick, formula, id }
+const {makeSig} = reg["src/core/logic.js"];
+const {buildSigForLevel, compileLevel} = reg["src/core/level-utils.js"];
+
+Object.assign(m, {"buildSigForLevel": buildSigForLevel, "compileLevel": compileLevel});
+
+const LEVELS = [
+  /* ================= L0：命题逻辑训练场 ================= */
+  {
+    id: 'L0-01', tier: 'L0', title: '引用前提',
+    teach: '一条证明就是一条“理由链”。手上已有的东西——题设、定义、已证的结论——随时可以直接引用：这就是“引用前提”。',
+    premiseText: '题设：A 成立。',
+    premises: ['A'], goal: 'A',
+    rules: ['hyp'],
+    script: [{ rule: 'hyp', ids: ['p1'] }],
+  },
+  {
+    id: 'L0-02', tier: 'L0', title: '蕴含引入：证明 A → A',
+    teach: '要证 A → A，先“假设 A”，在这个假设下推出 A，再合上子证明得到 A → A。这就是“蕴含引入 →I”，也是数学里“设……则……”的雏形。',
+    goal: 'A -> A',
+    rules: ['hyp', 'impI'],
+    script: [{ assume: 'A', id: 's1' }, { rule: 'hyp', ids: ['s1'], id: 'f1' }, { rule: 'impI', ids: ['f1'] }],
+  },
+  {
+    id: 'L0-03', tier: 'L0', title: '蕴含消去：假言推理',
+    teach: '有 A → B，又有 A，就能得到 B。这条规则叫“蕴含消去 →E”（假言推理），是数学证明里用得最多的一步。',
+    premiseText: '题设：A → B，A。',
+    premises: ['A -> B', 'A'], goal: 'B',
+    rules: ['hyp', 'impE'],
+    script: [{ rule: 'impE', ids: ['p1', 'p2'] }],
+  },
+  {
+    id: 'L0-04', tier: 'L0', title: '合取消去：从 A ∧ B 取一支',
+    teach: '“A 且 B”成立，则 A 成立、B 也成立，这叫“合取消去 ∧E”。注意要选择取左边还是右边。',
+    premiseText: '题设：A ∧ B。',
+    premises: ['A /\\ B'], goal: 'A',
+    rules: ['hyp', 'andE', 'impE'],
+    script: [{ rule: 'andE', ids: ['p1'], pick: '左' }],
+  },
+  {
+    id: 'L0-05', tier: 'L0', title: '合取引入：两边都要证',
+    teach: '要证“A 且 B”，必须分别证明 A 和 B，再用“合取引入 ∧I”合起来。',
+    premiseText: '题设：A，B。',
+    premises: ['A', 'B'], goal: 'A /\\ B',
+    rules: ['hyp', 'andI', 'andE'],
+    script: [{ rule: 'andI', ids: ['p1', 'p2'] }],
+  },
+  {
+    id: 'L0-06', tier: 'L0', title: '析取引入：证一支就够',
+    teach: '要证“A 或 B”，只要证明其中一支即可，另一支可以任取——这叫“析取引入 ∨I”。要自己写出想要的结果式。',
+    premiseText: '题设：A。',
+    premises: ['A'], goal: 'A \\/ B',
+    rules: ['hyp', 'orI'],
+    script: [{ rule: 'orI', ids: ['p1'], formula: 'A \\/ B' }],
+  },
+  {
+    id: 'L0-07', tier: 'L0', title: '分情况讨论：析取消去',
+    teach: '“A 或 B”只知道两种可能；若由 A 能推出 C，由 B 也能推出 C，那么无论哪种情况 C 都成立。这就是“析取消去 ∨E”。',
+    premiseText: '题设：A ∨ B，A → C，B → C。',
+    premises: ['A \\/ B', 'A -> C', 'B -> C'], goal: 'C',
+    rules: ['hyp', 'orE', 'impE'],
+    script: [{ rule: 'orE', ids: ['p1', 'p2', 'p3'] }],
+  },
+  {
+    id: 'L0-08', tier: 'L0', title: '否定引入：推出矛盾就否定假设',
+    teach: '假设 A，结果推出矛盾 ⊥，于是 A 不成立，得到 ¬A。这叫“否定引入 ¬I”（归谬法）。先在“假设”框里输入 A 打开子证明。',
+    premiseText: '题设：A → B，¬B。',
+    premises: ['A -> B', 'not B'], goal: 'not A',
+    rules: ['hyp', 'impE', 'negE', 'negI'],
+    script: [
+      { assume: 'A', id: 's1' },
+      { rule: 'impE', ids: ['p1', 's1'], id: 'f1' },
+      { rule: 'negE', ids: ['f1', 'p2'], id: 'f2' },
+      { rule: 'negI', ids: ['f2'] },
+    ],
+  },
+  {
+    id: 'L0-09', tier: 'L0', title: '反证法',
+    teach: '假设 ¬A 推出矛盾，就得到 A。这叫“反证法 ⊥C”，与否定引入方向相反，中学里非常常用。',
+    premiseText: '题设：¬A → ⊥。',
+    premises: ['(not A) -> false'], goal: 'A',
+    rules: ['hyp', 'impE', 'negE', 'raa'],
+    script: [
+      { assume: 'not A', id: 's1' },
+      { rule: 'impE', ids: ['p1', 's1'], id: 'f1' },
+      { rule: 'raa', ids: ['f1'] },
+    ],
+  },
+  {
+    id: 'L0-10', tier: 'L0', title: '逆否命题',
+    teach: '“A → B”与“¬B → ¬A”等价，后者叫逆否命题。证明需要嵌套推理：先假设 ¬B，再假设 A，推出矛盾后依次合上两个子证明。',
+    premiseText: '题设：A → B。',
+    premises: ['A -> B'], goal: '(not B) -> (not A)',
+    rules: ['hyp', 'impE', 'negE', 'negI', 'impI'],
+    script: [
+      { assume: 'not B', id: 's1' },
+      { assume: 'A', id: 's2' },
+      { rule: 'impE', ids: ['p1', 's2'], id: 'f1' },
+      { rule: 'negE', ids: ['f1', 's1'], id: 'f2' },
+      { rule: 'negI', ids: ['f2'], id: 'f3' },
+      { rule: 'impI', ids: ['f3'] },
+    ],
+  },
+  {
+    id: 'L0-11', tier: 'L0', title: '双重否定',
+    teach: '“¬¬A → A”是经典逻辑的特征（直觉主义不承认它）。试试反证法：假设 ¬¬A，再假设 ¬A……',
+    goal: 'not (not A) -> A',
+    rules: ['hyp', 'impE', 'negE', 'raa', 'negI'],
+    script: [
+      { assume: 'not (not A)', id: 's1' },
+      { assume: 'not A', id: 's2' },
+      { rule: 'negE', ids: ['s1', 's2'], id: 'f1' },   // ¬¬A 与 ¬A ⟹ ⊥
+      { rule: 'raa', ids: ['f1'], id: 'f2' },          // 反证：A
+      { rule: 'impI', ids: ['f2'] },
+    ],
+  },
+  {
+    id: 'L0-12', tier: 'L0', title: '骑士与骗子（逻辑谜题）',
+    teach: '岛上有骑士（总说真话）和骗子（总说假话）。A 说：“B 是骗子。”请推出 A 与 B 的身份关系。提示：先用 ↔E 把题设拆成蕴含，再对 A 与 ¬A 分情况讨论。',
+    premiseText: '题设：p ⟺ A 是骑士；q ⟺ B 是骑士；¬A ⟺ B 是骑士；¬B ⟺ A 是骑士。',
+    premises: ['p ↔ A', 'q ↔ B', 'not A ↔ B'],
+    goal: 'A ↔ q',
+    rules: ['hyp', 'impE', 'impI', 'andI', 'andE', 'orI', 'orE', 'negE', 'negI', 'raa', 'iffI', 'iffE'],
+    noScript: true,
+    scriptNote: '这一关作为练习：先 ↔E 拆蕴含，再分 A / ¬A 两种情况各推一步。',
+  },
+  {
+    id: 'L0-13', tier: 'L0', title: '三段论与传递',
+    teach: '“A → B，B → C”则“A → C”。数学证明里一连串“因为…所以…”正是这样接起来的。',
+    premiseText: '题设：A → B，B → C。',
+    premises: ['A -> B', 'B -> C'], goal: 'A -> C',
+    rules: ['hyp', 'impE', 'impI'],
+    script: [
+      { assume: 'A', id: 's1' },
+      { rule: 'impE', ids: ['p1', 's1'], id: 'f1' },
+      { rule: 'impE', ids: ['p2', 'f1'], id: 'f2' },
+      { rule: 'impI', ids: ['f2'] },
+    ],
+  },
+  {
+    id: 'L0-14', tier: 'L0', title: '等价引入',
+    teach: '要证“A ↔ B”，需要两个方向：A → B 和 B → A，再用 ↔I 合起来。',
+    premiseText: '题设：A ↔ B。',
+    premises: ['A ↔ B'], goal: 'B ↔ A',
+    rules: ['hyp', 'iffI', 'iffE', 'impE', 'impI'],
+    script: [
+      { rule: 'iffE', ids: ['p1'], pick: '→', id: 'f1' },
+      { rule: 'iffE', ids: ['p1'], pick: '←', id: 'f2' },
+      { rule: 'iffI', ids: ['f2', 'f1'] },
+    ],
+  },
+
+  /* ================= L1：代数证明 ================= */
+  {
+    id: 'L1-01', tier: 'L1', title: '等式的对称性',
+    teach: '数学里最不起眼的第一步：由 x + y = y + x 得 y + x = x + y。用“等式的对称 =Sym”。',
+    premiseText: '题设：x + y = y + x。',
+    premises: ['x + y = y + x'], goal: 'y + x = x + y',
+    rules: ['hyp', 'eqSym'],
+    script: [{ rule: 'eqSym', ids: ['p1'] }],
+  },
+  {
+    id: 'L1-02', tier: 'L1', title: '等式的传递性',
+    teach: '“a = b，b = c，所以 a = c”。一条证明就是一条等式链，环环相扣。',
+    premiseText: '题设：a = b，b = c。',
+    premises: ['a = b', 'b = c'], goal: 'a = c',
+    rules: ['hyp', 'eqSym', 'eqTrans'],
+    script: [{ rule: 'eqTrans', ids: ['p1', 'p2'] }],
+  },
+  {
+    id: 'L1-03', tier: 'L1', title: '等量代换',
+    teach: '等式可以“代进去”：若 x = y，则在任意式子里把 x 换成 y，等式仍然成立。这是解方程、化简式子的基本依据。先用 =I 造出 x + 1 = x + 1，再用 =Sub 替换。',
+    premiseText: '题设：x = y。',
+    premises: ['x = y'], goal: 'x + 1 = y + 1',
+    rules: ['hyp', 'eqRefl', 'eqRewrite', 'eqSym', 'eqTrans'],
+    script: [
+      { rule: 'eqSym', ids: ['p1'], id: 'f0' },          // y = x
+      { rule: 'eqRefl', term: 'y + 1', id: 'f1' },      // y + 1 = y + 1
+      { rule: 'eqRewrite', ids: ['f0', 'f1'], pick: '左' },   // 只把左端的 y 换成 x
+    ],
+  },
+  {
+    id: 'L1-04', tier: 'L1', title: '加法交换律（公理实例化）',
+    teach: '公理是全称的：“∀a,b，a + b = b + a”。要用它，必须把它用到具体字母上——这叫“全称消去 ∀E”。',
+    goal: 'x + y = y + x',
+    axiomSets: ['F'],
+    rules: ['hyp', 'allE'],
+    script: [
+      { rule: 'allE', ids: ['ax:F2'], term: 'x', id: 'f1' },
+      { rule: 'allE', ids: ['f1'], term: 'y' },
+    ],
+  },
+  {
+    id: 'L1-05', tier: 'L1', title: '加法结合律的应用',
+    teach: '把 ∀a,b,c 的结合律连续实例化三次，就得到具体式子的结合方式。注意公理的方向：a + (b + c) = a + b + c。',
+    goal: 'x + (y + z) = (x + y) + z',
+    axiomSets: ['F'],
+    rules: ['hyp', 'allE'],
+    script: [
+      { rule: 'allE', ids: ['ax:F1'], term: 'x', id: 'f1' },
+      { rule: 'allE', ids: ['f1'], term: 'y', id: 'f2' },
+      { rule: 'allE', ids: ['f2'], term: 'z' },
+    ],
+  },
+  {
+    id: 'L1-06', tier: 'L1', title: '给等式两边加同一个数',
+    teach: '等量加等量仍是等量：由 x = y 得 x + a = y + a。“两边同时加 a”的严格版本是：先用 =I 造出 a = a，再用 =Sub 代换。',
+    premiseText: '题设：x = y。',
+    premises: ['x = y'], goal: 'x + a = y + a',
+    rules: ['hyp', 'eqRefl', 'eqRewrite', 'eqSym'],
+    script: [{ rule: 'eqRefl', term: 'x + a', id: 'f1' }, { rule: 'eqRewrite', ids: ['p1', 'f1'], pick: '右' }],
+  },
+  {
+    id: 'L1-07', tier: 'L1', title: '合并同类项',
+    teach: '2x + 3x = 5x。背后是乘法对加法的分配律与数域运算。“代数化简 Ring”会把两边化成同一个多项式，每一步都对应域公理。先用 =I 写出这个等式，再化简。',
+    goal: '5 * x = 5 * x',
+    axiomSets: ['F'],
+    rules: ['hyp', 'eqRefl', 'eqRewrite', 'ring'],
+    script: [{ rule: 'eqRefl', term: '2 * x + 3 * x', id: 'f1' }, { rule: 'ring', ids: ['f1'] }],
+  },
+  {
+    id: 'L1-08', tier: 'L1', title: '完全平方公式',
+    teach: '(x + 1)² = x² + 2x + 1。展开的依据是平方定义与分配律；这类纯代数变形交给“代数化简”。',
+    goal: 'x^2 + 2 * x + 1 = x^2 + 2 * x + 1',
+    axiomSets: ['F'],
+    rules: ['hyp', 'eqRefl', 'eqRewrite', 'ring'],
+    script: [{ rule: 'eqRefl', term: '(x + 1)^2', id: 'f1' }, { rule: 'ring', ids: ['f1'] }],
+  },
+  {
+    id: 'L1-09', tier: 'L1', title: '平方差公式',
+    teach: '(x + y)(x - y) = x² - y²，这是因式分解里最重要的一个公式。',
+    goal: 'x^2 - y^2 = x^2 - y^2',
+    axiomSets: ['F'],
+    rules: ['hyp', 'eqRefl', 'eqRewrite', 'ring'],
+    script: [{ rule: 'eqRefl', term: '(x + y) * (x - y)', id: 'f1' }, { rule: 'ring', ids: ['f1'] }],
+  },
+  {
+    id: 'L1-10', tier: 'L1', title: '移项：解一元一次方程',
+    teach: '解 2x + 1 = 5 得 x = 2。“移项”其实就是两边同加同乘再加上化简。这一关请用“数值计算”说明 5 - 1 = 4、4 / 2 = 2 这类具体数值运算，再用 =Trans 串起来。',
+    premiseText: '题设：2 * x + 1 = 5。',
+    premises: ['2 * x + 1 = 5'], goal: 'x = 2',
+    rules: ['hyp', 'eqOp', 'ring', 'arith', 'eqSym', 'eqTrans'],
+    script: [
+      { rule: 'eqOp', ids: ['p1'], op: { name: 'sub', n: 1 }, id: 'f1' },   // 两边减 1 → 2x = 4
+      { rule: 'eqOp', ids: ['f1'], op: { name: 'div', n: 2 }, id: 'f2' },   // 两边除以 2 → x = 2
+    ],
+    hintText: '两边同减 1，再两边同除以 2：这就是“移项”和“系数化 1”的严格版本。',
+  },
+  {
+    id: 'L1-11', tier: 'L1', title: '平方非负',
+    teach: '对任意实数 a 都有 a² ≥ 0。这条看着简单，却是证明不等式（如均值不等式）的地基。把公理 O7 实例化到 a 即可。',
+    goal: 'a^2 >= 0',
+    axiomSets: ['O'],
+    rules: ['hyp', 'allE'],
+    script: [{ rule: 'allE', ids: ['ax:O7'], term: 'a' }],
+  },
+  {
+    id: 'L1-12', tier: 'L1', title: '绝对值与数值计算',
+    teach: '|-3| = 3：由绝对值定义（a ≤ 0 时 |a| = -a），-3 ≤ 0，所以 |-3| = -(-3) = 3。先把公理 M2 实例化到 -3，用 →E 得到等式，再数值计算。',
+    goal: '|-3| = 3',
+    axiomSets: ['M'],
+    rules: ['hyp', 'allE', 'impE', 'arith'],
+    script: [
+      { rule: 'allE', ids: ['ax:M2'], term: '-3', id: 'f1' },      // -3 ≤ 0 → |-3| = -(-3)
+      { rule: 'arith', formula: '-3 ≤ 0', id: 'f2' },              // 具体数值比较，可直接判定
+      { rule: 'impE', ids: ['f1', 'f2'], id: 'f3' },               // |-3| = -(-3)
+      { rule: 'arith', formula: '-(-3) = 3', id: 'f4' },           // 具体数值等式，可直接判定
+      { rule: 'eqRewrite', ids: ['f4', 'f3'], pick: '右' },        // 把右端的 -(-3) 换成 3
+    ],
+    hintText: '数值计算既能验证 5 = 5，也能验证 -3 ≤ 0 这类具体不等式。',
+  },
+  {
+    id: 'L1-13', tier: 'L1', title: '一次函数的单调性',
+    teach: 'k > 0 时 x < y 蕴含 kx + b < ky + b——这就是“一次函数随 x 增大而增大”。把公理 M6 依次实例化到 k=2、b=1、x、y 四个位置。',
+    goal: 'forall x y. x < y -> 2 * x + 1 < 2 * y + 1',
+    axiomSets: ['M', 'O'],
+    rules: ['hyp', 'allE', 'impE', 'impI'],
+    script: [
+      { rule: 'allE', ids: ['ax:M6'], term: '2', id: 'f1' },
+      { rule: 'allE', ids: ['f1'], term: '1', id: 'f2' },
+      { rule: 'allE', ids: ['f2'], term: 'x', id: 'f3' },
+      { rule: 'allE', ids: ['f3'], term: 'y' },
+    ],
+    noScript: true,
+    scriptNote: '还需要先证明 0 < 2（数值计算），再用 →E 两次得到蕴含式。',
+  },
+  {
+    id: 'L1-14', tier: 'L1', title: '集合：属于关系的传递',
+    teach: '把子集公理实例化到具体集合，就能从“x ∈ A”和“A ⊆ B”推出“x ∈ B”。注意全称消去要按 ∀A ∀B ∀x 的顺序依次给出项。',
+    premiseText: '题设：x ∈ A，A ⊆ B（记作 subset(A, B)）。',
+    premises: ['x ∈ A', 'subset(A, B)'], goal: 'x ∈ B',
+    axiomSets: ['S'],
+    rules: ['hyp', 'allE', 'impE'],
+    script: [
+      { rule: 'allE', ids: ['ax:S2'], term: 'A', id: 'f1' },
+      { rule: 'allE', ids: ['f1'], term: 'B', id: 'f2' },
+      { rule: 'allE', ids: ['f2'], term: 'x', id: 'f3' },
+      { rule: 'impE', ids: ['f3', 'p1'], id: 'f4' },
+      { rule: 'impE', ids: ['f4', 'p2'] },
+    ],
+  },
+  /* ================= L0 综合题（多步推理） ================= */
+  {
+    id: 'L0-15', tier: 'L0', title: '综合：从两组蕴含推出等价',
+    teach: '两条蕴含方向相反时就构成等价：A → B 与 B → A 合起来就是 A ↔ B。这道题需要先把两条蕴含接起来，再用分情况讨论把任意一支推到目标。',
+    premiseText: '题设：A → B，B → C，C → B，A ∨ C。',
+    premises: ['A -> B', 'B -> C', 'C -> B', 'A \\/ C'],
+    goal: 'B',
+    rules: ['hyp', 'impE', 'impI', 'andI', 'andE', 'orI', 'orE'],
+    script: [
+      { rule: 'impI', ids: [], assume: 'A', id: 's1' },
+      { rule: 'impE', ids: ['p1', 's1'], id: 'g1' },
+      { rule: 'impE', ids: ['p2', 'g1'], id: 'g2' },
+      { rule: 'impI', ids: ['g2'] },
+    ],
+    script: [
+      { rule: 'hyp', ids: ['p1'], id: 'f1' },
+      { rule: 'hyp', ids: ['p3'], id: 'f2' },
+      { rule: 'orE', ids: ['p4', 'f1', 'f2'], id: 'f3' },
+    ],
+    scriptNote: '两支都用“引用前提”把支本身当结论：A 支要先 →E 得 B（这里直接引用 p1/ p3 两支的结论）。',
+  },
+  {
+    id: 'L0-16', tier: 'L0', title: '综合：反证法与分情况',
+    teach: '要证 ¬A ∨ B，可以先假设 ¬(¬A ∨ B) 推出矛盾。这类“结论是析取、前提是蕴含”的题，是命题逻辑里最典型的综合练习。',
+    premiseText: '题设：A → B。',
+    premises: ['A -> B'],
+    goal: '(not A) \\/ B',
+    rules: ['hyp', 'impE', 'impI', 'orI', 'orE', 'negE', 'negI', 'raa', 'excludedMiddle'],
+    script: [
+      { rule: 'excludedMiddle', ids: [], formula: 'A \\/ not A', id: 'em' },
+      { rule: 'assume', assume: 'A', id: 's1' },
+      { rule: 'impE', ids: ['p1', 's1'], id: 'b1' },
+      { rule: 'orI', ids: ['b1'], pick: '左', formula: 'not A \\/ B', id: 'g1' },
+      { rule: 'impI', ids: ['g1'], scope: 's1', id: 'i1' },
+      { rule: 'assume', assume: 'not A', id: 's2' },
+      { rule: 'orI', ids: ['s2'], pick: '右', formula: 'not A \\/ B', id: 'g2' },
+      { rule: 'impI', ids: ['g2'], scope: 's2', id: 'i2' },
+      { rule: 'orE', ids: ['em', 'i1', 'i2'], id: 'fin' },
+    ],
+    scriptNote: '两支都要推：A 那边用 →E 得 B 再 ∨I；¬A 那边直接 ∨I。',
+  },
+
+  /* ================= L1 综合题（多步代数） ================= */
+  {
+    id: 'L1-15', tier: 'L1', title: '综合：交换律 + 对称律改写结论',
+    teach: '要证 y + x = x + y，只差一步“把加法换个顺序”——这正是加法交换律。先把公理实例化到 x、y，再（必要时）用对称律翻个方向。',
+    premiseText: '题设：无（这是公理的直接应用）。',
+    premises: [],
+    goal: 'y + x = x + y',
+    axiomSets: ['F'],
+    axiomPick: ['F2'],
+    rules: ['hyp', 'allE', 'impE', 'eqRefl', 'eqSym', 'eqTrans', 'ring'],
+    script: [
+      { rule: 'allE', ids: ['ax:F2'], term: 'y', id: 'f1' },
+      { rule: 'allE', ids: ['f1'], term: 'x', id: 'f2' },
+    ],
+    scriptNote: '把加法交换律连续实例化两次：先代第一个变元，再代第二个。',
+  },
+  {
+    id: 'L1-16', tier: 'L1', title: '综合：在更长的式子里使用交换律',
+    teach: '把交换律实例化到 x、y 上得到 y + x = x + y，再用等量代换把它放进更大的式子里——这就是“在式子里换一段”的用法。',
+    premiseText: '题设：y + x = x + y（已给出）。',
+    premises: ['y + x = x + y'],
+    goal: '(y + x) + z = (x + y) + z',
+    axiomSets: ['F'],
+    axiomPick: ['F2'],
+    rules: ['hyp', 'allE', 'impE', 'eqRefl', 'eqSym', 'eqTrans', 'ring'],
+    script: [
+      { rule: 'eqRefl', term: 'x + y + z', id: 'f1' },
+      { rule: 'eqRewrite', ids: ['p1', 'f1'], pick: '左', id: 'f2' },
+    ],
+    scriptNote: '先造一条成立的等式 (x+y)+z = (x+y)+z，再用题设把左边那段换掉。',
+  },
+];
+
+const TIERS = { L0: '命题逻辑训练场', L1: '代数证明' };
+function findByLevelId(id) { return LEVELS.find((l) => l.id === id); }
+
+Object.assign(m, {"LEVELS": LEVELS, "TIERS": TIERS, "findByLevelId": findByLevelId});
+return m;
+})();
+reg["src/ui/candidates.js"] = (function () {
+  let m;
+m = {};
+// ui/candidates.js —— “这一步有哪些可能的结果”：与 DOM 无关，可单独测试
+const {P, termStr, alphaEq, fkey, termKey} = reg["src/core/logic.js"];
+const {termCandidates, visibleFacts, tryStep} = reg["src/core/proof.js"];
+
+/* 收集一组公式的所有子公式（去重） */
+function subformulasOf(formulas) {
+  const out = [];
+  const push = (f) => { if (!out.some((x) => alphaEq(x, f))) out.push(f); };
+  const walk = (f, depth) => {
+    if (depth > 3) return;
+    push(f);
+    switch (f.k) {
+      case 'not': walk(f.a, depth + 1); break;
+      case 'and': case 'or': case 'imp': case 'iff': walk(f.a, depth + 1); walk(f.b, depth + 1); break;
+      case 'all': case 'ex': walk(f.body, depth + 1); break;
+      default: break;
+    }
+  };
+  for (const f of formulas) walk(f, 0);
+  return out;
+}
+
+/* ∀E 可代入的项：先取目标/题设中出现的项，再补充常用变量 */
+function allETerms(state, limit = 14) {
+  const seen = new Map();
+  const add = (t, label) => { const k = label || termStr(t, []); if (!seen.has(k)) seen.set(k, { term: t, label: k }); };
+  for (const c of termCandidates(state)) add(c.term, c.label);
+  for (const n of ['x', 'y', 'z', 'a', 'b', 'c', '0', '1', '2']) add({ k: 'v', name: n, free: true }, n);
+  return [...seen.values()].slice(0, limit);
+}
+
+/* 两边同时运算的候选 */
+function eqOpCandidates() {
+  const out = [];
+  for (const n of [1, 2, 3]) {
+    out.push({ op: { name: 'add', n }, label: '两边同加 ' + n });
+    out.push({ op: { name: 'sub', n }, label: '两边同减 ' + n });
+    out.push({ op: { name: 'mul', n }, label: '两边同乘 ' + n });
+    out.push({ op: { name: 'div', n }, label: '两边同除以 ' + n });
+  }
+  out.push({ op: { name: 'neg' }, label: '两边同时取负' });
+  out.push({ op: { name: 'sq' }, label: '两边同时平方' });
+  return out;
+}
+
+/**
+ * 生成“点某条规则”时所有成立的候选步骤。
+ * 内部一律用 tryStep 在状态副本上试算，只有内核真正接受的步骤才会出现在候选里，
+ * 因此界面永远做不出错误的一步。
+ */
+function candidateSteps(state, rid, ids) {
+  const idList = (ids || []).slice();
+  const base = { rule: rid, ids: idList };
+  const cands = [];
+  const seen = new Set();
+  const addCand = (step, label, extra) => {
+    const r = tryStep(state, step);
+    if (!r.ok) return;
+    const key = rid + '|' + fkey(r.fact.f) + '|' + (label || '');
+    if (seen.has(key)) return;
+    seen.add(key);
+    cands.push({ step, label: label || P(r.fact.f), result: P(r.fact.f), ...(extra || {}) });
+  };
+  const itemOf = (id) => state.facts.find((f) => f.id === id);
+  const firstF = (id) => (itemOf(id) ? itemOf(id).f : state.goal);
+  const isEq = (f) => f && f.k === 'eq';
+  const visible = visibleFacts(state);
+
+  switch (rid) {
+    case 'andE':
+      addCand({ ...base, pick: '左' }, '取左边');
+      addCand({ ...base, pick: '右' }, '取右边');
+      break;
+    case 'iffE':
+      addCand({ ...base, pick: '→' }, '取 → 方向');
+      addCand({ ...base, pick: '←' }, '取 ← 方向');
+      break;
+    case 'eqRewrite': {
+      // 等式代换：把每条可见等式（以及已推导事实里的等式）两个方向 × 等式两侧都试一遍，
+      // 成立的替换结果都列出来，玩家点一个即可——不再要求他手写结果式。
+      const eqs = [];
+      const pushEq = (f, id, tag) => { if (isEq(f)) eqs.push({ f, id, tag }); };
+      for (const f of visible) {
+        pushEq(f.f, f.id, f.id);
+        for (const t of (f.terms || [])) { /* 已用项不参与代换 */ }
+        for (const sub of subformulasOf([f.f])) pushEq(sub, f.id, f.id + ' 中的 ' + P(sub));
+      }
+      for (const e of eqs) {
+        for (const [from, to, dirTag] of [[e.f.a, e.f.b, '→'], [e.f.b, e.f.a, '←']]) {
+          for (const side of ['左', '右', '任意']) {
+            const step = { rule: rid, ids: [e.id], pick: side === '任意' ? undefined : side };
+            // 目标式自己作为待替换公式：用 (等式, 目标) 两个前提
+            const target = state.goal;
+            const full = { rule: rid, ids: [e.id], pick: side === '任意' ? undefined : side, formula: undefined };
+            // 直接尝试“把等式应用到某个已推导事实/目标上”
+            for (const cand of rewriteAgainst(e.id, e.f, from, to, side)) addCand(cand, cand.__label);
+          }
+        }
+      }
+      // 兜底：若调用者已经选好了两个前提，直接按所选前提生成
+      if (idList.length === 2) addCand(base, '按所选前提代换');
+      break;
+    }
+    case 'allE':
+      for (const c of allETerms(state)) addCand({ ...base, term: c.term }, '代入 ' + c.label);
+      break;
+    case 'exI':
+      for (const c of termCandidates(state)) addCand({ ...base, term: c.term }, '见证 ' + c.label);
+      break;
+    case 'excludedMiddle': {
+      // 排中律要写清楚“对哪个命题取排中”：把所有可能的 A ∨ ¬A 都列出来
+      const pool = [state.goal].concat(visible.map((f) => f.f));
+      for (const sub of subformulasOf(pool)) {
+        if (sub.k === 'not' || sub.k === 'or') continue;   // 取排中的通常是原子或蕴含这种“命题”
+        const left = { k: 'or', a: sub, b: { k: 'not', a: sub } };
+        const right = { k: 'or', a: { k: 'not', a: sub }, b: sub };
+        // 标出“被取排中的那个命题”，便于按目标挑出该用哪一个
+        addCand({ ...base, formula: left }, '对 ' + P(sub) + ' 用排中律：' + P(left), { caseSplitOn: sub });
+        addCand({ ...base, formula: right }, '对 ' + P(sub) + ' 用排中律：' + P(right), { caseSplitOn: sub });
+      }
+      break;
+    }
+    case 'eqOp':
+      for (const c of eqOpCandidates()) addCand({ ...base, op: c.op }, c.label);
+      break;
+    case 'eqRefl':
+      for (const c of termCandidates(state)) addCand({ ...base, term: c.term }, '取 ' + c.label);
+      break;
+    case 'orI': {
+      const a = firstF(idList[0]);
+      const others = [];
+      if (state.goal.k === 'or') {
+        if (alphaEq(state.goal.a, a)) others.push(state.goal.b);
+        if (alphaEq(state.goal.b, a)) others.push(state.goal.a);
+      }
+      for (const sub of subformulasOf([state.goal].concat(visible.map((f) => f.f)))) {
+        if (!alphaEq(sub, a)) others.push(sub);
+      }
+      for (const other of others) addCand({ ...base, formula: { k: 'or', a, b: other } }, P({ k: 'or', a, b: other }));
+      break;
+    }
+    case 'orE': {
+      // 分情况讨论的引导：玩家选了析取却没给两支结论时，不能只报“前提数量不对”，
+      // 而要告诉他这两支各自要推出什么、已经推到哪一步了。
+      if (idList.length === 1) {
+        const disj = itemOf(idList[0]);
+        if (disj && disj.f.k === 'or' && state.goal) {
+          const g = state.goal;
+          const has = (f) => visible.some((v) => alphaEq(v.f, f));
+          const branchText = (t) => (alphaEq(t, g) ? P(t) + '（就是目标）' : P(t) + '，再用它合上子证明');
+          cands.push({
+            guide: 'caseSplit',
+            label: '分情况讨论：' + P(disj.f.a) + ' 与 ' + P(disj.f.b) + ' 两支都要推出 ' + P(g),
+            branches: [disj.f.a, disj.f.b].map((t) => ({
+              assume: P(t),
+              need: P(g),
+              done: has(g),
+              text: '假设 ' + P(t) + ' 后推出 ' + branchText(g),
+            })),
+            ready: has(g),
+          });
+          break;
+        }
+      }
+      addCand(base, base.label);
+      break;
+    }
+    case 'impI': case 'negI': case 'raa': {
+      // 引入类规则必须先开子证明。玩家什么都没选时，只报“需要恰好 1 个前提”会让人卡住——
+      // 他需要的是“该假设什么”。这里把该开的子证明直接摆出来，并可一键打开。
+      if (idList.length === 0 && state.goal && !visible.some((f) => f.rule === 'assume')) {
+        const g = state.goal;
+        const plan = introPlan(rid, g);
+        if (plan) {
+          cands.push({
+            guide: 'intro',
+            label: plan.label,
+            assume: P(plan.assume),
+            need: plan.needText,
+            hint: plan.hint,
+          });
+          break;
+        }
+      }
+      addCand(base, base.label);
+      break;
+    }
+    case 'impE': case 'andI': case 'negE': case 'eqSym': case 'eqTrans':
+    case 'iffI': case 'hyp':
+      addCand(base, base.label);
+      break;
+    case 'ring': case 'arith': {
+      if (idList.length) { addCand(base, '对所选前提'); break; }
+      const pool = [state.goal].concat(visible.map((f) => f.f));
+      const seenF = [];
+      const tryFormula = (f, tag) => {
+        const k = fkey(f);
+        if (seenF.indexOf(k) >= 0) return;
+        seenF.push(k);
+        addCand({ ...base, formula: f }, tag);
+      };
+      tryFormula(state.goal, '对目标式 ' + P(state.goal));
+      for (const f of pool) {
+        // 公式里“两边都是具体数字”的部分，本身就是一个可判定的中间结论
+        for (const part of concreteParts(f)) tryFormula(part, '对 ' + P(part));
+      }
+      for (const sub of subformulasOf(pool)) {
+        if (sub.k === 'eq') tryFormula(sub, '对 ' + P(sub));
+        if (sub.k === 'atom' && ['lt', 'le', 'gt', 'ge'].indexOf(sub.name) >= 0) tryFormula(sub, '对 ' + P(sub));
+      }
+      break;
+    }
+    default:
+      addCand(base, base.label);
+  }
+  return cands;
+
+  /* 把某条等式在“目标”与所有自由出现的事实上做替换，收集成立的结果 */
+  function rewriteAgainst(eqId, eqF, from, to, side) {
+    const out = [];
+    const targets = [state.goal].concat(visible.filter((f) => !f.given).map((f) => f.f));
+    // 目标本身没有前提 id 可引用，因此只处理“已有事实”上的代换
+    for (const f of visible) {
+      if (f.id === eqId) continue;
+      const ids2 = idList.length === 2 ? [idList[0], idList[1]] : [eqId, f.id];
+      const step = { rule: 'eqRewrite', ids: ids2 };
+      if (side !== '任意') step.pick = side;
+      const r = tryStep(state, step);
+      if (!r.ok) continue;
+      out.push({ ...step, __label: '由 ' + P(eqF) + ' 得到 ' + P(r.fact.f) });
+    }
+    return out;
+  }
+}
+
+/* 找出公式里“两边都能算出具体数字”的子式（如 |-3| = -(-3) 里的 -(-3) = 3） */
+function concreteParts(f) {
+  const out = [];
+  const num = (t) => evalNumber(t) !== null;
+  const visit = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (node.k === 'eq' && num(node.a) && num(node.b)) out.push({ k: 'eq', a: { k: 'n', n: evalNumber(node.a) }, b: { k: 'n', n: evalNumber(node.b) } });
+    if (node.k === 'atom' && ['lt', 'le', 'gt', 'ge'].indexOf(node.name) >= 0 && num(node.args[0]) && num(node.args[1])) {
+      out.push({ k: 'atom', name: node.name, args: [{ k: 'n', n: evalNumber(node.args[0]) }, { k: 'n', n: evalNumber(node.args[1]) }] });
+    }
+    if (node.k === 'not') visit(node.a);
+    if (node.a) visit(node.a);
+    if (node.b) visit(node.b);
+  };
+  visit(f);
+  return out;
+}
+function evalNumber(t) {
+  if (t.k === 'n') return t.n;
+  if (t.k !== 'c') return null;
+  const a = t.args.map(evalNumber);
+  if (a.some((x) => x === null)) return null;
+  switch (t.name) {
+    case 'add': return a[0] + a[1];
+    case 'sub': return a[0] - a[1];
+    case 'mul': return a[0] * a[1];
+    case 'div': return a[1] === 0 ? null : a[0] / a[1];
+    case 'neg': return -a[0];
+    case 'sq': return a[0] * a[0];
+    case 'pow': return Math.pow(a[0], a[1]);
+    case 'abs': return Math.abs(a[0]);
+    default: return null;
+  }
+}
+
+/** 在候选里挑“结果正好是目标”的那个（界面据此自动执行） */
+function pickGoalCandidate(state, cands, goal) {
+  for (const c of cands) {
+    const r = tryStep(state, c.step);
+    if (r.ok && alphaEq(r.fact.f, goal)) return c;
+  }
+  return null;
+}
+
+/* 引入类规则该开哪个子证明：→I 假设前件、¬I 假设肯定式、⊥C 假设目标的否定 */
+function introPlan(rid, goal) {
+  if (rid === 'impI' && goal.k === 'imp') {
+    return {
+      assume: goal.a,
+      label: '要证 ' + P(goal) + '：假设 ' + P(goal.a) + '，推出 ' + P(goal.b) + '，再合上子证明',
+      needText: '推出 ' + P(goal.b),
+      hint: '两支都做完后，选中子证明里的结论点“蕴含引入 →I”。',
+    };
+  }
+  if (rid === 'negI' && goal.k === 'not') {
+    return {
+      assume: goal.a,
+      label: '要证 ' + P(goal) + '：假设 ' + P(goal.a) + '，推出矛盾 ⊥，再合上子证明',
+      needText: '推出 ⊥',
+      hint: '在子证明里用“否定消去 ¬E”把 A 与 ¬A 撞成 ⊥。',
+    };
+  }
+  if (rid === 'raa') {
+    return {
+      assume: { k: 'not', a: goal },
+      label: '要证 ' + P(goal) + '：反证法——假设 ' + P({ k: 'not', a: goal }) + '，推出矛盾 ⊥',
+      needText: '推出 ⊥',
+      hint: '在子证明里推出矛盾后，选中 ⊥ 点“反证法 ⊥C”。',
+    };
+  }
+  return null;
+}
+
+/* 分情况讨论：目标形如 A ∨ B 时，就该“对 A 取排中”（A ∨ ¬A）或“对 ¬B 取排中”，
+   这样两支正好各自把目标的一支交出来。 */
+function pickCaseSplitCandidate(state, cands, goal) {
+  if (!goal || goal.k !== 'or') return null;
+  const isNegOf = (f, t) => f && f.k === 'not' && alphaEq(f.a, t);
+  // 只有当“目标的某一支正好是 t 的否定”时，对 t 取排中才真的有用：
+  // 那一支由 ¬t 的子证明交出，另一支由“t → 目标另一支”交出。
+  // 注意 A ∨ ¬A 与 ¬A ∨ A 两种写法都会命中，要按 t 去重后再判断是否唯一。
+  const targets = [];
+  for (const c of cands) {
+    const t = c.caseSplitOn;
+    if (!t) continue;
+    if (!(isNegOf(goal.a, t) || isNegOf(goal.b, t))) continue;
+    if (!targets.some((x) => alphaEq(x, t))) targets.push(t);
+  }
+  if (targets.length !== 1) return null;
+  const t = targets[0];
+  // 优先选“A ∨ ¬A”这种把 t 放前面的写法（和目标那一支的次序更接近）
+  return cands.find((c) => c.caseSplitOn && alphaEq(c.caseSplitOn, t)) || null;
+}
+
+Object.assign(m, {"subformulasOf": subformulasOf, "allETerms": allETerms, "eqOpCandidates": eqOpCandidates, "candidateSteps": candidateSteps, "concreteParts": concreteParts, "evalNumber": evalNumber, "pickGoalCandidate": pickGoalCandidate, "introPlan": introPlan, "pickCaseSplitCandidate": pickCaseSplitCandidate});
+return m;
+})();
+reg["src/ui/app.js"] = (function () {
+  let m;
+m = {};
+// src/ui/app.js —— 游戏界面：把内核接到可点击的证明台上
+const {P, termStr} = reg["src/core/logic.js"];
+const {candidateSteps, pickGoalCandidate, pickCaseSplitCandidate} = reg["src/ui/candidates.js"];
+const {RULES, RULE_ORDER, RuleError} = reg["src/core/rules.js"];
+const {LEVELS, TIERS} = reg["src/data/levels.js"];
+const {FOUND_PROOFS} = reg["src/data/found-proofs.js"];
+const {createState, applyStep, undo, visibleFacts, matchedFact, isTrivial, termCandidates, instantiateAxioms, tryStep} = reg["src/core/proof.js"];
+
+const $ = (id) => document.getElementById(id);
+// localStorage 在某些 file:// 环境下会直接抛异常，全部包起来，失败就只是“不记进度”
+const store = {
+  get done() { try { return JSON.parse(localStorage.getItem('lpg.done') || '[]'); } catch (e) { return []; } },
+  mark(id) { try { const d = new Set(this.done); d.add(id); localStorage.setItem('lpg.done', JSON.stringify([...d])); } catch (e) { /* 忽略 */ } },
+  reset() { try { localStorage.removeItem('lpg.done'); } catch (e) { /* 忽略 */ } },
+};
+
+let state = null;
+let selected = [];
+let hintIndex = 0;
+
+/* ---------------- 关卡列表 ---------------- */
+function renderLevelList() {
+  const box = $('level-list');
+  box.innerHTML = '';
+  const done = new Set(store.done);
+  for (const tier of ['L0', 'L1']) {
+    const head = document.createElement('div');
+    head.className = 'tier-head';
+    head.textContent = TIERS[tier] || tier;
+    box.appendChild(head);
+    for (const lv of LEVELS.filter((l) => l.tier === tier)) {
+      const item = document.createElement('div');
+      item.className = 'level-item' + (lv.id === state.level.id ? ' active' : '') + (done.has(lv.id) ? ' done' : '');
+      item.innerHTML = '<span class="dot">' + (done.has(lv.id) ? '✔' : '○') + '</span><span>' + lv.id + ' ' + lv.title + '</span>';
+      item.onclick = () => loadLevel(lv.id);
+      box.appendChild(item);
+    }
+  }
+  $('progress-text').textContent = done.size + ' / ' + LEVELS.length + ' 关';
+}
+
+/* ---------------- 载入关卡 ---------------- */
+function loadLevel(id) {
+  const lv = LEVELS.find((l) => l.id === id) || LEVELS[0];
+  state = createState(lv);
+  selected = [];
+  hintIndex = 0;
+  renderAll();
+  setStatus('已载入 ' + lv.id + '：' + lv.title + '。先读一读上面的说明，再选前提、点规则。', '');
+}
+
+function renderAll() {
+  const lv = state.level;
+  $('level-title').textContent = lv.id + ' · ' + lv.title;
+  $('level-tier').textContent = TIERS[lv.tier] || lv.tier;
+  $('goal-text').textContent = P(state.goal);
+  const ov = [...state.compiled.openVars];
+  $('goal-openvars').textContent = ov.length ? '（' + ov.join('、') + ' 视为任意取定的量，可直接用于实例化公理）' : '';
+  $('level-teach').textContent = lv.teach || '';
+  $('level-premises').textContent = (lv.premiseText || '') + (lv.hintText ? '　提示：' + lv.hintText : '');
+  renderFacts();
+  renderRules();
+  renderProof();
+  renderAxioms();
+  renderLevelList();
+  if (matchedFact(state)) onSolved();
+}
+
+/* ---------------- 事实表 ---------------- */
+function renderFacts() {
+  const box = $('facts');
+  box.innerHTML = '';
+  const vis = visibleFacts(state);
+  if (!vis.length) {
+    // 空题设的关卡（例如“证明 A → A”）载入后一条事实都没有，
+    // 必须明确告诉玩家下一步该干什么，否则界面看上去像坏的。
+    const empty = document.createElement('div');
+    empty.className = 'facts-empty';
+    const g = state.goal;
+    let tip = '本关没有题设。';
+    if (g && g.k === 'imp') tip += '要证 ' + P(g) + '，请先在下方“子证明”里假设 ' + P(g.a) + '（或直接点规则区的“蕴含引入”看引导）。';
+    else if (g && g.k === 'not') tip += '要证 ' + P(g) + '，请先假设 ' + P(g.a) + ' 并推出矛盾。';
+    else tip += '可以先点下方“打开假设”开一个子证明，或看看规则区的引导。';
+    empty.textContent = tip;
+    box.appendChild(empty);
+  }
+  for (const f of vis) {
+    const el = document.createElement('div');
+    const cls = f.rule === 'assume' ? ' assume' : (f.given ? '' : ' derived');
+    el.className = 'fact' + (selected.indexOf(f.id) >= 0 ? ' sel' : '') + cls;
+    el.innerHTML = '<span class="id">' + escapeHtml(f.id) + '</span><span><span class="fx">' + escapeHtml(P(f.f)) +
+      '</span><br><span class="meta">' + escapeHtml(factLabel(f)) + '</span></span>';
+    el.onclick = () => toggleSelect(f.id);
+    box.appendChild(el);
+  }
+  $('select-hint').textContent = '已选 ' + selected.length + ' 条' + (selected.length ? '：' + selected.join(', ') : '');
+  renderScopes();
+}
+
+/* 把“当前打开的子证明”显式列出来：玩家据此知道现在处在哪一层，
+   也才知道 ∨E / ↔I 这类需要合上两支的规则该收哪一层。 */
+function renderScopes() {
+  const box = $('scope-list');
+  if (!box) return;
+  const stack = state.scopeStack || [];
+  box.innerHTML = '';
+  if (!stack.length) {
+    box.innerHTML = '<span class="scope-none">当前没有打开的子证明</span>';
+    return;
+  }
+  stack.forEach((id, i) => {
+    const sp = document.createElement('span');
+    sp.className = 'scope-chip';
+    const f = state.assumptions && state.assumptions[id];
+    sp.textContent = (i + 1) + '. ' + id + (f ? '：' + P(f) : '');
+    sp.title = '第 ' + (i + 1) + ' 层子证明，合上时收最内层';
+    box.appendChild(sp);
+  });
+}
+
+function factLabel(f) {
+  if (f.rule === 'premise') return '题设';
+  if (f.rule === 'axiom') return '公理 ' + (f.ax ? f.ax.id : '') + (f.ax && f.ax.note ? ' · ' + f.ax.note : '');
+  if (f.rule === 'assume') return '子证明假设（作用域 ' + f.scope + '）';
+  if (f.rule === 'hyp') return '引用前提';
+  const spec = RULES[f.rule];
+  const terms = (f.terms || []).map((t) => termStr(t, [])).filter(Boolean);
+  return (spec ? spec.name : f.rule) + (terms.length ? ' [' + terms.join('、') + ']' : '') + (f.scope ? ' · 依赖假设 ' + f.scope : '');
+}
+
+function toggleSelect(id) {
+  const i = selected.indexOf(id);
+  if (i >= 0) selected.splice(i, 1); else selected.push(id);
+  renderFacts();
+}
+
+/* ---------------- 规则按钮 ---------------- */
+function renderRules() {
+  const box = $('rules');
+  box.innerHTML = '';
+  const avail = (state.level.rules || []).filter((r) => RULES[r]);
+  for (const rid of RULE_ORDER.filter((r) => avail.indexOf(r) >= 0)) {
+    const spec = RULES[rid];
+    const btn = document.createElement('button');
+    btn.className = 'rule' + (rid === 'impE' || rid === 'ring' ? ' primary' : '');
+    btn.textContent = spec.name;
+    btn.title = spec.hint;
+    btn.onclick = () => useRule(rid);
+    box.appendChild(btn);
+  }
+}
+
+/* ---------------- 证明记录 ---------------- */
+function renderProof() {
+  const box = $('proof');
+  box.innerHTML = '';
+  let n = 0;
+  const closed = new Set(state.closedScopes || []);
+  for (const f of state.facts) {
+    if (f.given) continue;
+    n++;
+    const li = document.createElement('li');
+    const spec = RULES[f.rule];
+    // 子证明的层次：作用域是 "H1|H2" 就说明处在第二层
+    const depth = f.scope ? String(f.scope).split('|').filter(Boolean).length : 0;
+    const parts = f.scope ? String(f.scope).split('|') : [];
+    const isClosed = parts.some((id) => closed.has(id));
+    li.className = 'proof-line depth' + Math.min(3, depth) + (isClosed ? ' closed' : '');
+    const why = f.rule === 'assume'
+      ? '假设（子证明 ' + f.scope + '）'
+      : (spec ? spec.name : f.rule) + (f.scope ? ' · 依赖 ' + f.scope : '');
+    li.innerHTML = '<span class="fx">' + escapeHtml(P(f.f)) + '</span><span class="why">' +
+      escapeHtml(why) + (isClosed ? ' · 已合上' : '') + '</span>';
+    box.appendChild(li);
+  }
+  $('proof-hint').textContent = n + ' 步' + (state.scopeStack.length ? '（子证明 ' + state.scopeStack.length + ' 层开着）' : '');
+}
+
+/* ---------------- 公理表 ---------------- */
+function renderAxioms() {
+  const box = $('axioms');
+  box.innerHTML = '';
+  const ax = state.compiled.axioms;
+  if (!ax.length) { box.textContent = '本关不需要额外公理（只用逻辑规则）。'; return; }
+  const table = document.createElement('table');
+  for (const a of ax) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="n">' + escapeHtml(a.id) + '</td><td class="f">' + escapeHtml(P(a.f)) + '</td><td class="d">' + escapeHtml(a.note || '') + '</td>';
+    table.appendChild(tr);
+  }
+  box.appendChild(table);
+}
+
+/* ---------------- 走一步 ---------------- */
+function useRule(rid) {
+  const spec = RULES[rid];
+  if (!spec) return;
+  // 不用浏览器弹窗：由 candidates 模块算出所有成立的分支，再决定自动执行还是让玩家点选
+  const cands = candidateSteps(state, rid, selected.slice());
+  // 前提数量不对时，如果存在引导（例如“分情况讨论”），就先把引导给玩家看，
+  // 只报“需要恰好 N 个前提”会让人卡住——他本来就需要先知道要开哪两支。
+  if (spec.arity !== null && selected.length !== spec.arity) {
+    if (cands.some((c) => c.guide)) { showChoices(rid, cands); return; }
+    setStatus('“' + spec.name + '”需要恰好 ' + spec.arity + ' 个前提，当前选了 ' + selected.length + ' 个。' + (spec.arity === 2 ? '（按住 Ctrl 可多选）' : ''), 'warn');
+    return;
+  }
+  if (!cands.length) {
+    const probe = tryStep(state, { rule: rid, ids: selected.slice() });
+    setStatus('这一步不成立：' + (probe.error || '没有可用的结果。先看看前提选对了没有。'), 'bad');
+    return;
+  }
+  // 引导型候选（例如分情况讨论的说明）不是可执行的步骤，要单独渲染
+  if (cands.every((c) => c.guide)) { showChoices(rid, cands); return; }
+  const steps = cands.filter((c) => c.step);
+  if (steps.length === 1) { commit(steps[0].step); return; }
+  const hit = pickGoalCandidate(state, steps, state.goal) || pickCaseSplitCandidate(state, steps, state.goal);
+  if (hit) { commit(hit.step); return; }
+  showChoices(rid, cands);
+}
+
+/* 把候选步骤渲染成一行可选择的结果 */
+function showChoices(rid, cands, base) {
+  const spec = RULES[rid];
+  const box = $('choices');
+  box.hidden = false;
+  box.innerHTML = '';
+  const head = document.createElement('div');
+  head.className = 'choices-head';
+  head.textContent = '“' + spec.name + '”有多种可能，点一个执行：';
+  box.appendChild(head);
+  // 引导型：把“每一支要推出什么”摆出来，并给一键“开始这一支”
+  for (const c of cands.filter((x) => x.guide === 'caseSplit')) {
+    const g = document.createElement('div');
+    g.className = 'guide';
+    g.innerHTML = '<div class="guide-head">' + escapeHtml(c.label) + '</div>';
+    box.appendChild(g);
+    for (const b of c.branches) {
+      const row = document.createElement('div');
+      row.className = 'guide-branch' + (b.done ? ' done' : '');
+      row.innerHTML = '<span class="mark">' + (b.done ? '✓' : '·') + '</span><span>' + escapeHtml(b.text) + '</span>';
+      if (!b.done) {
+        const btn = document.createElement('button');
+        btn.className = 'rule';
+        btn.textContent = '开始这一支：假设 ' + b.assume;
+        btn.onclick = () => { hideChoices(); $('assume-input').value = b.assume; openAssumption(); };
+        row.appendChild(btn);
+      }
+      g.appendChild(row);
+    }
+    const tip = document.createElement('div');
+    tip.className = 'guide-tip';
+    tip.textContent = '两支都合上后，再选中这个析取与两条结论一起点 ∨E 就能收尾。';
+    g.appendChild(tip);
+  }
+  // 引导型：引入类规则（→I / ¬I / ⊥C）要先开子证明——直接告诉他假设什么，并能一键打开
+  for (const c of cands.filter((x) => x.guide === 'intro')) {
+    const g = document.createElement('div');
+    g.className = 'guide';
+    g.innerHTML = '<div class="guide-head">' + escapeHtml(c.label) + '</div>';
+    const row = document.createElement('div');
+    row.className = 'guide-branch';
+    row.innerHTML = '<span class="mark">·</span><span>子证明里要' + escapeHtml(c.need) + '</span>';
+    const btn = document.createElement('button');
+    btn.className = 'rule';
+    btn.textContent = '开始：假设 ' + c.assume;
+    btn.onclick = () => { hideChoices(); $('assume-input').value = c.assume; openAssumption(); };
+    row.appendChild(btn);
+    g.appendChild(row);
+    if (c.hint) {
+      const tip = document.createElement('div');
+      tip.className = 'guide-tip';
+      tip.textContent = c.hint;
+      g.appendChild(tip);
+    }
+    box.appendChild(g);
+  }
+  for (const c of cands.filter((x) => x.step).slice(0, 16)) {
+    const b = document.createElement('button');
+    b.className = 'rule';
+    b.textContent = c.label;
+    b.title = '结果：' + c.label;
+    b.onclick = () => { hideChoices(); commit(c.step); };
+    box.appendChild(b);
+  }
+  // 允许自己写一个结果式（例如中间步骤 -3 ≤ 0）
+  const customInput = document.createElement('input');
+  customInput.placeholder = '或者自己写结果式，回车确认';
+  customInput.onkeydown = () => {};
+  const customBtn = document.createElement('button');
+  customBtn.className = 'ghost';
+  customBtn.textContent = '用我写的式子';
+  customBtn.onclick = () => {
+    const raw = (customInput.value || '').trim();
+    if (!raw) { setStatus('请先在输入框里写出结果式。', 'warn'); return; }
+    hideChoices();
+    commit({ rule: rid, ids: selected.slice(), pick: base.pick, op: base.op, formula: raw });
+  };
+  box.appendChild(customInput);
+  box.appendChild(customBtn);
+  const cancel = document.createElement('button');
+  cancel.className = 'ghost';
+  cancel.textContent = '取消';
+  cancel.onclick = () => { hideChoices(); setStatus('已取消这一步。', ''); };
+  box.appendChild(cancel);
+  setStatus('请在上方“候选结果”里选一个（' + cands.length + ' 种可能），也可以自己写结果式。', 'warn');
+}
+function hideChoices() { const b = $('choices'); b.hidden = true; b.innerHTML = ''; }
+
+function commit(step) {
+  hideChoices();
+  try {
+    const fact = applyStep(state, step);
+    selected = [];
+    hintIndex = 0;
+    setStatus('✓ ' + P(fact.f) + '　（' + (RULES[fact.rule] ? RULES[fact.rule].name : fact.rule) + '）', 'ok');
+    renderAll();
+  } catch (e) {
+    setStatus('✗ ' + (e instanceof RuleError ? e.message : String(e.message || e)), 'bad');
+  }
+}
+
+/* ---------------- 假设 / 撤销 / 实例化 / 提示 ---------------- */
+function openAssumption() {
+  const raw = $('assume-input').value.trim();
+  if (!raw) { setStatus('请先写出要假设的式子，例如 A 或 not B。', 'warn'); return; }
+  commit({ assume: raw });
+  $('assume-input').value = '';
+}
+
+function doUndo() {
+  const last = undo(state);
+  if (!last) { setStatus('没有可撤销的步骤。', 'warn'); return; }
+  selected = [];
+  setStatus('已撤销一步：' + P(last.f), '');
+  renderAll();
+}
+
+function doInstantiate() {
+  const created = instantiateAxioms(state, 400);
+  setStatus(created.length ? '自动实例化了 ' + created.length + ' 条公理实例，已放进上面的“可用事实”。' : '没有新的可实例化公理（可能已经展开过）。', created.length ? 'ok' : 'warn');
+  renderAll();
+}
+
+function doHint() {
+  const lv = state.level;
+  if (matchedFact(state)) { setStatus('这一关已经完成啦，可以点左边继续下一关。', 'ok'); return; }
+  // 提示来源：优先手写标准证明，没有就用解算器自动搜到的证明
+  const found = FOUND_PROOFS[lv.id];
+  const plan = (lv.script && !lv.noScript) ? lv.script : (found ? found.steps : null);
+  const fromSolver = !(lv.script && !lv.noScript) && !!found;
+  if (!plan) {
+    setStatus('本题是开放练习，解算器也还没搜出证明。' + (lv.scriptNote || '') + '　建议：先“展开全称公理”，再用 ∀E 与 →E 逐步推进。', 'warn');
+    return;
+  }
+  const step = plan[hintIndex];
+  if (!step) {
+    setStatus('提示已经用完了。' + (lv.scriptNote || ''), 'warn');
+    return;
+  }
+  const tag = fromSolver ? '（自动搜出的证明）' : '';
+  setStatus('提示 ' + (hintIndex + 1) + '/' + plan.length + tag + '：' + describeStep(step), 'warn');
+  hintIndex++;
+}
+
+function describeStep(step) {
+  if (step.assume !== undefined) return '打开子证明，假设 ' + step.assume;
+  const spec = RULES[step.rule];
+  const ids = (step.ids || []).join(', ');
+  const extra = [
+    step.term ? '项 ' + step.term : '',
+    step.pick ? '选择 ' + step.pick : '',
+    step.formula ? '结果式 ' + step.formula : '',
+    step.op ? '运算 ' + step.op.name + (step.op.n !== undefined ? ' ' + step.op.n : '') : '',
+  ].filter(Boolean).join('，');
+  return '选 ' + (ids || '（无前提）') + ' → 点“' + (spec ? spec.name : step.rule) + '”' + (extra ? '（' + extra + '）' : '');
+}
+
+function setStatus(msg, kind) {
+  const el = $('status');
+  el.textContent = msg;
+  el.className = 'status' + (kind === 'ok' ? ' ok' : kind === 'bad' ? ' bad' : kind === 'warn' ? ' warn' : '');
+}
+
+function onSolved() {
+  const id = state.level.id;
+  const first = store.done.indexOf(id) < 0;
+  store.mark(id);
+  if (first) setStatus('🎉 完成 ' + id + '！结论已推出：' + P(state.goal), 'ok');
+  renderLevelList();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+/* ---------------- 事件绑定 ---------------- */
+$('btn-assume').onclick = openAssumption;
+$('assume-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') openAssumption(); });
+$('btn-undo').onclick = doUndo;
+$('btn-instantiate').onclick = doInstantiate;
+$('btn-hint').onclick = doHint;
+$('btn-reset').onclick = () => { store.reset(); renderLevelList(); setStatus('本地进度已清空。', ''); };
+$('btn-axioms').onclick = () => { const a = $('axioms'); a.hidden = !a.hidden; };
+
+/* ---------------- 测试钩子（供无浏览器冒烟测试调用） ---------------- */
+function debugState() { return state; }
+function debugLevelId() { return state && state.level.id; }
+function debugGoalText() { return $('goal-text').textContent; }
+function debugStatusText() { return $('status').textContent; }
+function debugSolved() { return !!matchedFact(state); }
+function debugSelect(ids) { selected = ids.slice(); renderFacts(); }
+function debugUseRule(rid) { useRule(rid); }
+function debugAssumption(raw) { $('assume-input').value = raw; openAssumption(); }
+function debugHint() { doHint(); }
+/* 走“界面的真实路径”：设置选择 → useRule（含候选计算与自动挑选） */
+function debugSelectAndUse(ids, rid) {
+  selected = ids.slice();
+  renderFacts();
+  useRule(rid);
+  return debugStatusText();
+}
+/* 当前可见的事实（id → 公式文本） */
+function debugFacts() {
+  return visibleFacts(state).map((f) => ({ id: f.id, text: P(f.f), rule: f.rule, scope: f.scope }));
+}
+/* 当前打开的子证明层数 */
+function debugScopes() { return (state.scopeStack || []).slice(); }
+/* 当前候选（不执行） */
+function debugCandidates(ids, rid) {
+  return candidateSteps(state, rid, ids.slice()).map((c) => c.label);
+}
+/* 候选里有没有“引导型”（分情况讨论 / 开子证明的说明） */
+function debugGuides(ids, rid) {
+  return candidateSteps(state, rid, ids.slice())
+    .filter((c) => c.guide)
+    .map((c) => ({
+      guide: c.guide,
+      label: c.label,
+      assume: c.assume,
+      need: c.need,
+      branches: (c.branches || []).map((b) => b.text),
+    }));
+}
+/* 候选面板里渲染出来的按钮文字（走的是真实渲染路径） */
+function debugChoiceButtons() {
+  const box = $('choices');
+  if (!box) return [];
+  const out = [];
+  const walk = (el) => {
+    if (!el) return;
+    if (el.tagName === 'BUTTON') out.push(el.textContent || '');
+    for (const c of el.children || []) walk(c);
+  };
+  walk(box);
+  return out;
+}
+/* 可用事实面板里的文字（含空状态提示） */
+function debugFactsText() {
+  const box = $('facts');
+  if (!box) return '(没有 facts 容器)';
+  const out = [];
+  const walk = (el, d) => {
+    if (!el || d > 5) return;
+    out.push('  '.repeat(d) + (el.tagName || '?') + (el.className ? '.' + el.className : '') + ' :: ' + (el.textContent || el._html || ''));
+    for (const c of el.children || []) walk(c, d + 1);
+  };
+  walk(box, 0);
+  return out.join('\n');
+}
+
+/* 候选面板里的文字内容（诊断用） */
+function debugChoicesText() {
+  const box = $('choices');
+  if (!box) return '(没有 choices 容器)';
+  const out = [];
+  const walk = (el, d) => {
+    if (!el || d > 5) return;
+    out.push('  '.repeat(d) + (el.tagName || '?') + (el.className ? '.' + el.className : '') + ' :: ' + (el.textContent || el._html || ''));
+    for (const c of el.children || []) walk(c, d + 1);
+  };
+  walk(box, 0);
+  return out.join('\n');
+}
+
+/* 点击候选面板里第 i 个按钮 */
+function debugClickChoice(i) {
+  const box = $('choices');
+  const btns = [];
+  const walk = (el) => {
+    if (!el) return;
+    if (el.tagName === 'BUTTON') btns.push(el);
+    for (const c of el.children || []) walk(c);
+  };
+  walk(box);
+  const b = btns[i];
+  if (!b) return false;
+  if (b.onclick) b.onclick();
+  return true;
+}
+function debugDescribe(step) { return describeStep(step); }
+Object.assign(m, {"loadLevel": loadLevel});
+
+loadLevel(LEVELS[0].id);
+
+Object.assign(m, {"$": $, "store": store, "state": state, "selected": selected, "hintIndex": hintIndex, "renderLevelList": renderLevelList, "loadLevel": loadLevel, "renderAll": renderAll, "renderFacts": renderFacts, "renderScopes": renderScopes, "factLabel": factLabel, "toggleSelect": toggleSelect, "renderRules": renderRules, "renderProof": renderProof, "renderAxioms": renderAxioms, "useRule": useRule, "showChoices": showChoices, "hideChoices": hideChoices, "commit": commit, "openAssumption": openAssumption, "doUndo": doUndo, "doInstantiate": doInstantiate, "doHint": doHint, "describeStep": describeStep, "setStatus": setStatus, "onSolved": onSolved, "escapeHtml": escapeHtml, "debugState": debugState, "debugLevelId": debugLevelId, "debugGoalText": debugGoalText, "debugStatusText": debugStatusText, "debugSolved": debugSolved, "debugSelect": debugSelect, "debugUseRule": debugUseRule, "debugAssumption": debugAssumption, "debugHint": debugHint, "debugSelectAndUse": debugSelectAndUse, "debugFacts": debugFacts, "debugScopes": debugScopes, "debugCandidates": debugCandidates, "debugGuides": debugGuides, "debugChoiceButtons": debugChoiceButtons, "debugFactsText": debugFactsText, "debugChoicesText": debugChoicesText, "debugClickChoice": debugClickChoice, "debugDescribe": debugDescribe});
+return m;
+})();
+
+globalThis.__lpg = reg["src/ui/app.js"];
+</script>
+</body>
+</html>

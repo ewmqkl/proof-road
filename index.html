@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>证明之路 · 从命题逻辑到代数定理</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">⊢</span>
+    <div>
+      <h1>证明之路</h1>
+      <p class="sub">用命题逻辑与自然演绎，一步步推出中学数学定理</p>
+    </div>
+  </div>
+  <div class="stats">
+    <span id="progress-text">0 / 0 关</span>
+    <button id="btn-reset" class="ghost" title="清空本地进度">重置进度</button>
+  </div>
+</header>
+<main>
+  <aside class="sidebar"><div id="level-list" class="level-list"></div></aside>
+  <section class="workspace">
+    <div class="level-head">
+      <h2 id="level-title">载入中…</h2>
+      <div class="tier" id="level-tier"></div>
+    </div>
+    <div class="goal-box">
+      <div class="label">要证明的结论</div>
+      <div class="goal" id="goal-text">—</div>
+      <div class="openvars" id="goal-openvars"></div>
+    </div>
+    <p class="teach" id="level-teach"></p>
+    <p class="premise-note" id="level-premises"></p>
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-head"><span>可用事实（点选作为前提）</span><span class="hint" id="select-hint">已选 0 条</span></div>
+        <div class="facts" id="facts"></div>
+        <div class="panel-foot">
+          <button id="btn-instantiate" class="ghost">展开全称公理（自动实例化）</button>
+          <button id="btn-undo" class="ghost">撤销一步</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>推理规则</span><span class="hint" id="rule-hint">先选前提，再点规则</span></div>
+        <div class="rules" id="rules"></div>
+        <div class="choices" id="choices" hidden></div>
+      </div>
+    </div>
+    <div class="proof-area">
+      <div class="panel-head"><span>证明记录</span><span class="hint" id="proof-hint"></span></div>
+      <ol class="proof" id="proof"></ol>
+    </div>
+    <div class="assume-bar">
+      <span>子证明：</span>
+      <input id="assume-input" placeholder="输入假设式，例如 A 或 not B">
+      <button id="btn-assume">打开假设</button>
+      <button id="btn-hint" class="primary">提示</button>
+      <span class="scopes" id="scope-list"></span>
+    </div>
+    <div class="status" id="status">选好前提后点击规则即可推进一步。</div>
+    <div class="axioms-toggle"><button id="btn-axioms" class="ghost">查看本关公理表</button></div>
+    <div class="axioms" id="axioms" hidden></div>
+  </section>
+</main>
+<script type="module" src="src/ui/app.js"></script>
+</body>
+</html>
